@@ -9,9 +9,11 @@ public class AiChanMiraiTimers {
 
 
     private int greetCounter = 0;
+
     public int getGreetCounter() {
         return greetCounter;
     }
+
     public void deductGreetCoolDown() {
         if (greetCounter == 2 || greetCounter == 1) {
             greetCounter -= 1;
@@ -20,6 +22,7 @@ public class AiChanMiraiTimers {
         }
         //AiChanMirai.INSTANCE.getLogger().info("Refreshed greet counter to " + greetCounter);
     }
+
     public void addGreetCoolDown() {
         if (greetCounter == 0 || greetCounter == 1) {
             greetCounter += 1;
@@ -27,7 +30,6 @@ public class AiChanMiraiTimers {
             greetCounter = 0;
         }
     }
-
 
 
     private final List<String> responseInCoolDown = new ArrayList<String>();

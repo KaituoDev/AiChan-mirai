@@ -15,6 +15,7 @@ import java.util.List;
 
 public class ServerHandler implements IDataHandler, IConnectHandler, IIdleTimeoutHandler, IConnectionTimeoutHandler, IDisconnectHandler {
     public static final ServerHandler INSTANCE = new ServerHandler();
+
     private ServerHandler() {
         logger = AiChanMirai.INSTANCE.getLogger();
     }
@@ -29,7 +30,7 @@ public class ServerHandler implements IDataHandler, IConnectHandler, IIdleTimeou
             BufferUnderflowException {
         nbc.setEncoding("UTF-8");
         String remoteName = nbc.getRemoteAddress().getHostName();
-        logger.info("客户端 " + nbc.getId() + " " + remoteName + " 已连接");
+        logger.info(String.format("客户端 %s %s 已连接", nbc.getId(), remoteName));
         connections.add(nbc);
         return true;
     }
@@ -37,7 +38,7 @@ public class ServerHandler implements IDataHandler, IConnectHandler, IIdleTimeou
     @Override
     public boolean onDisconnect(INonBlockingConnection nbc) throws IOException {
         String remoteName = nbc.getRemoteAddress().getHostName();
-        logger.info("客户端 " + nbc.getId() + " " + remoteName + " 已断开");
+        logger.info(String.format("客户端 %s %s 已断开", nbc.getId(), remoteName));
         connections.remove(nbc);
         nbc.close();
         return true;
@@ -59,20 +60,19 @@ public class ServerHandler implements IDataHandler, IConnectHandler, IIdleTimeou
             connections.remove(nbc);
             AiChanMirai.INSTANCE.getLogger().warning("解密失败，断开客户端连接！");
             return true;
-
         }
 
         SocketPacket packet = SocketPacket.parsePacket(data);
         switch (packet.getPacketType()) {
-            case GROUP_TEXT -> {
-                AiChanMirai.INSTANCE.queueGroupMessage(MainConfig.INSTANCE.getMessagingGroup(), packet.get(0));
-            }
+            case GROUP_TEXT -> AiChanMirai.INSTANCE.queueGroupMessage(
+                    MainConfig.INSTANCE.getMessagingGroup(), packet.get(0)
+            );
             case PLAYER_LOOKUP -> {
-                String mcid = packet.get(0);
-                long id = PlayerDataConfig.INSTANCE.searchMCId(mcid);
+                String mcId = packet.get(0);
+                long id = PlayerDataConfig.INSTANCE.searchMCId(mcId);
                 if (id == -1) {
                     SocketPacket notFoundPacket = new SocketPacket(SocketPacket.PacketType.PLAYER_NOT_FOUND);
-                    notFoundPacket.set(0, mcid);
+                    notFoundPacket.set(0, mcId);
                     SocketServer.INSTANCE.sendPacket(notFoundPacket);
                 } else {
                     SocketPacket statusPacket = PlayerDataConfig.INSTANCE.getUserData(id).getStatusPacket();
@@ -90,7 +90,7 @@ public class ServerHandler implements IDataHandler, IConnectHandler, IIdleTimeou
     @Override
     public boolean onIdleTimeout(INonBlockingConnection nbc) throws IOException {
         String remoteName = nbc.getRemoteAddress().getHostName();
-        logger.info("客户端 " + nbc.getId() + " " + remoteName + " 已断开");
+        logger.info(String.format("客户端 %s %s 已断开", nbc.getId(), remoteName));
         connections.remove(nbc);
         nbc.close();
         return true;
@@ -102,7 +102,7 @@ public class ServerHandler implements IDataHandler, IConnectHandler, IIdleTimeou
     @Override
     public boolean onConnectionTimeout(INonBlockingConnection nbc) throws IOException {
         String remoteName = nbc.getRemoteAddress().getHostName();
-        logger.info("客户端 " + nbc.getId() + " " + remoteName + " 已断开");
+        logger.info(String.format("客户端 %s %s 已断开", nbc.getId(), remoteName));
         connections.remove(nbc);
         nbc.close();
         return true;

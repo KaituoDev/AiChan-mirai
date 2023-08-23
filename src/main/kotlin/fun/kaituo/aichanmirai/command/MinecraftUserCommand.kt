@@ -10,29 +10,33 @@ import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.MemberCommandSender
 import net.mamoe.mirai.console.command.UserCommandSender
+import net.mamoe.mirai.contact.nameCardOrNick
 
-object MinecraftUserCommand : CompositeCommand (
-    AiChanMirai.INSTANCE, "mc",
+object MinecraftUserCommand : CompositeCommand(
+    AiChanMirai.INSTANCE,
+    "mc",
     description = "AiMC主命令"
-){
+) {
     @SubCommand
-    @Description("为自己链接QQ号和MCID")
+    @Description("为自己链接 QQ 号和 MCID")
     suspend fun CommandSender.link(mcId: String) {
         if (this !is UserCommandSender) {
-            AiChanMirai.INSTANCE.queueCommandReplyMessage(this,ResponseConfig.userOnlyMessage);
+            AiChanMirai.INSTANCE.queueCommandReplyMessage(this, ResponseConfig.userOnlyMessage)
         }
         val userSender = this as UserCommandSender
-        val result : PlayerDataConfig.LinkResult = PlayerDataConfig.link(userSender.user.id, mcId);
-        val nick : String = userSender.user.nick
+        val result: PlayerDataConfig.LinkResult = PlayerDataConfig.link(userSender.user.id, mcId)
+        val nick: String = userSender.user.nameCardOrNick
         when (result) {
             PlayerDataConfig.LinkResult.SUCCESS -> {
-                AiChanMirai.INSTANCE.queueCommandReplyMessage(this,"$nick，你已成功链接ID $mcId");
+                AiChanMirai.INSTANCE.queueCommandReplyMessage(this, "$nick，你已为自己的 QQ 号链接至 ID：$mcId")
             }
+
             PlayerDataConfig.LinkResult.FAIL_ALREADY_LINKED -> {
-                AiChanMirai.INSTANCE.queueCommandReplyMessage(this,"$nick，你已经链接过了！请联系管理员解绑！")
+                AiChanMirai.INSTANCE.queueCommandReplyMessage(this, "$nick，你已经链接过了！请联系管理员解绑！")
             }
+
             PlayerDataConfig.LinkResult.FAIL_ALREADY_EXIST -> {
-                AiChanMirai.INSTANCE.queueCommandReplyMessage(this,"$nick，这个ID已被其他用户链接了！")
+                AiChanMirai.INSTANCE.queueCommandReplyMessage(this, "$nick，该 ID 已被其他用户链接了！")
             }
         }
     }
@@ -41,11 +45,11 @@ object MinecraftUserCommand : CompositeCommand (
     @Description("列出在线玩家")
     suspend fun CommandSender.list() {
         if (this !is MemberCommandSender) {
-            AiChanMirai.INSTANCE.queueCommandReplyMessage(this,ResponseConfig.groupOnlyMessage)
+            AiChanMirai.INSTANCE.queueCommandReplyMessage(this, ResponseConfig.groupOnlyMessage)
             return
         }
         if (this.group.id != MainConfig.messagingGroup) {
-            AiChanMirai.INSTANCE.queueCommandReplyMessage(this,ResponseConfig.groupOnlyMessage)
+            AiChanMirai.INSTANCE.queueCommandReplyMessage(this, ResponseConfig.groupOnlyMessage)
             return
         }
         val packet = SocketPacket(SocketPacket.PacketType.LIST_REQUEST)

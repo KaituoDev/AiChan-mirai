@@ -14,19 +14,20 @@ public class SocketPacket {
 
     //public static final int MAX_DATA_SIZE = 8;
 
-    public enum PacketType{
+    public enum PacketType {
         HEARTBEAT, GROUP_TEXT, SERVER_TEXT, PLAYER_LOOKUP, PLAYER_STATUS, PLAYER_NOT_FOUND, LIST_REQUEST, SERVER_COMMAND,
     }
 
-    public SocketPacket(PacketType packetType){
+    public SocketPacket(PacketType packetType) {
         this.packetType = packetType;
     }
 
     public static SocketPacket parsePacket(String string) {
         JSONObject packetObject = (JSONObject) JSON.parse(string);
         JSONArray contentArray = packetObject.getJSONArray("content");
-        SocketPacket result = new SocketPacket(PacketType.valueOf(
-                packetObject.getString("packetType")));
+        SocketPacket result = new SocketPacket(
+                PacketType.valueOf(packetObject.getString("packetType"))
+        );
         if (contentArray != null) {
             for (int i = 0; i < contentArray.size(); i += 1) {
                 result.set(i, contentArray.getString(i));
@@ -46,9 +47,9 @@ public class SocketPacket {
         return JSON.toJSONString(packetObject);
     }
 
-     */
+    */
 
-    public void set(int index, String data){
+    public void set(int index, String data) {
         content.add(index, data);
     }
 

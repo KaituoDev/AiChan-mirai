@@ -25,15 +25,13 @@ public class SocketServer {
 
         String encryptedData = token.serialise();
 
-        for (INonBlockingConnection c: new ArrayList<>(ServerHandler.INSTANCE.connections)) {
-            if (c == null)
-                continue;
-            if (!c.isOpen())
+        for (INonBlockingConnection c : new ArrayList<>(ServerHandler.INSTANCE.connections)) {
+            if (c == null || !c.isOpen())
                 continue;
             try {
                 c.write(encryptedData + SocketPacket.DELIMITER);
             } catch (IOException e) {
-                AiChanMirai.INSTANCE.getLogger().warning("发送消息失败",e);
+                AiChanMirai.INSTANCE.getLogger().warning("发送消息失败", e);
             }
         }
 
@@ -45,12 +43,15 @@ public class SocketServer {
     }
 
     private IServer server;
+
     private SocketServer() {
         try {
             InetAddress address = InetAddress.getByName(MainConfig.INSTANCE.getBindAddress());
             this.server = new Server(address, MainConfig.INSTANCE.getBindPort(), ServerHandler.INSTANCE);
             this.server.setFlushmode(IConnection.FlushMode.ASYNC);
-            AiChanMirai.INSTANCE.getLogger().info("服务器"+ this.server.getLocalAddress() + ":" + MainConfig.INSTANCE.getBindPort() + "已初始化");
+            AiChanMirai.INSTANCE.getLogger().info(
+                    String.format("服务器 %s:%s 已初始化", this.server.getLocalAddress(), MainConfig.INSTANCE.getBindPort())
+            );
         } catch (Exception e) {
             AiChanMirai.INSTANCE.getLogger().warning("服务器初始化失败", e);
         }

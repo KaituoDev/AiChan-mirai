@@ -32,7 +32,7 @@ public class AiChanMiraiMessageHandlers {
         }
     }
 
-    public void response(GroupMessageEvent e){
+    public void response(GroupMessageEvent e) {
         if (e.getBot().getId() != MainConfig.INSTANCE.getSenderId()) {
             return;
         }
@@ -45,11 +45,12 @@ public class AiChanMiraiMessageHandlers {
                 if (AiChanMiraiTimers.INSTANCE.checkResponseAvailability(entry.getKey())) {
                     AiChanMirai.INSTANCE.queueGroupMessage(e.getGroup().getId(), entry.getValue());
                     AiChanMiraiTimers.INSTANCE.setResponseUnavailable(entry.getKey());
-                    AiChanMirai.INSTANCE.getScheduler().delayed(ResponseConfig.INSTANCE.getResponseCoolDown(), () -> {
-                        AiChanMiraiTimers.INSTANCE.setResponseAvailable(entry.getKey());
-                    });
+                    AiChanMirai.INSTANCE.getScheduler().delayed(
+                            ResponseConfig.INSTANCE.getResponseCoolDown(),
+                            () -> AiChanMiraiTimers.INSTANCE.setResponseAvailable(entry.getKey())
+                    );
                 } else {
-                    AiChanMirai.INSTANCE.getLogger().info("精确关键词 " + entry.getKey() + " 冷却中");
+                    AiChanMirai.INSTANCE.getLogger().info(String.format("精确关键词 %s 冷却中", entry.getKey()));
                 }
                 return;
             }
@@ -61,11 +62,12 @@ public class AiChanMiraiMessageHandlers {
                 if (AiChanMiraiTimers.INSTANCE.checkResponseAvailability(entry.getKey())) {
                     AiChanMirai.INSTANCE.queueGroupMessage(e.getGroup().getId(), entry.getValue());
                     AiChanMiraiTimers.INSTANCE.setResponseUnavailable(entry.getKey());
-                    AiChanMirai.INSTANCE.getScheduler().delayed(ResponseConfig.INSTANCE.getResponseCoolDown(), () -> {
-                        AiChanMiraiTimers.INSTANCE.setResponseAvailable(entry.getKey());
-                    });
+                    AiChanMirai.INSTANCE.getScheduler().delayed(
+                            ResponseConfig.INSTANCE.getResponseCoolDown(),
+                            () -> AiChanMiraiTimers.INSTANCE.setResponseAvailable(entry.getKey())
+                    );
                 } else {
-                    AiChanMirai.INSTANCE.getLogger().info("包含关键词 " + entry.getKey() + " 冷却中");
+                    AiChanMirai.INSTANCE.getLogger().info(String.format("包含关键词 %s 冷却中", entry.getKey()));
                 }
             }
         }
@@ -78,6 +80,9 @@ public class AiChanMiraiMessageHandlers {
         if (!MainConfig.INSTANCE.getResponseGroups().contains(e.getGroup().getId())) {
             return;
         }
-        AiChanMirai.INSTANCE.queueGroupMessage(e.getGroup().getId(), ResponseConfig.INSTANCE.getWelcomeMessage().replace("%nick%", e.getMember().getNick()));
+        AiChanMirai.INSTANCE.queueGroupMessage(
+                e.getGroup().getId(),
+                ResponseConfig.INSTANCE.getWelcomeMessage().replace("%nick%", e.getMember().getNick())
+        );
     }
 }

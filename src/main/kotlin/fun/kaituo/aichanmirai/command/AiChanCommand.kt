@@ -7,7 +7,8 @@ import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.CompositeCommand
 
 object AiChanCommand : CompositeCommand(
-    AiChanMirai.INSTANCE, "ai",
+    AiChanMirai.INSTANCE,
+    "ai",
     description = "小爱主命令",
 ) {
     @SubCommand
@@ -43,7 +44,7 @@ object AiChanCommand : CompositeCommand(
         ResponseConfig.exactMatchResponses.remove(key)
         AiChanMirai.INSTANCE.queueCommandReplyMessage(
             this,
-            "成功删除关键词 $key (如果存在))"
+            "成功删除关键词 $key (如果存在)"
         )
     }
 
@@ -64,31 +65,28 @@ object AiChanCommand : CompositeCommand(
         ResponseConfig.containMatchResponses.remove(key)
         AiChanMirai.INSTANCE.queueCommandReplyMessage(
             this,
-            "成功删除(包含)关键词 $key (如果存在))"
+            "成功删除(包含)关键词 $key (如果存在)"
         )
     }
 
     @SubCommand
     @Description("列出所有关键词")
     suspend fun CommandSender.list() {
-        var listMessage: String = "精确匹配关键词有: "
-        ResponseConfig.exactMatchResponses.forEach { entry ->
-            listMessage = listMessage.plus(entry.key + " ")
-        }
-        listMessage = listMessage.plus("\n包含匹配关键词有: ")
-        ResponseConfig.containMatchResponses.forEach { entry ->
-            listMessage = listMessage.plus(entry.key + " ")
-        }
-        AiChanMirai.INSTANCE.queueCommandReplyMessage(this, listMessage)
+        val exactMatchKeywords = ResponseConfig.exactMatchResponses.keys.joinToString(" ")
+        val containMatchKeywords = ResponseConfig.containMatchResponses.keys.joinToString(" ")
+        val message = listOf(
+            "精确匹配关键词有:",
+            exactMatchKeywords,
+            "包含匹配关键词有:",
+            containMatchKeywords
+        ).joinToString("\n")
+        AiChanMirai.INSTANCE.queueCommandReplyMessage(this, message)
     }
 
     @SubCommand
-    @Description("刷新Socket通信token")
+    @Description("刷新 Socket 通信 Token")
     suspend fun CommandSender.genkey() {
         MainConfig.genKey()
-        AiChanMirai.INSTANCE.queueCommandReplyMessage(this, "成功刷新token，请前往配置文件复制")
+        AiChanMirai.INSTANCE.queueCommandReplyMessage(this, "成功刷新 Token，请前往配置文件复制")
     }
-
 }
-
-

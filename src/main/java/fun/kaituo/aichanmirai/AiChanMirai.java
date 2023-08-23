@@ -8,8 +8,10 @@ import fun.kaituo.aichanmirai.config.PlayerDataConfig;
 import fun.kaituo.aichanmirai.config.ResponseConfig;
 import fun.kaituo.aichanmirai.server.SocketServer;
 import net.mamoe.mirai.Bot;
+import net.mamoe.mirai.console.command.Command;
 import net.mamoe.mirai.console.command.CommandManager;
 import net.mamoe.mirai.console.command.CommandSender;
+import net.mamoe.mirai.console.data.AutoSavePluginConfig;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
@@ -43,11 +45,28 @@ import java.util.concurrent.Future;
 
 public final class AiChanMirai extends JavaPlugin {
     public static final AiChanMirai INSTANCE = new AiChanMirai();
+
+    private static final List<AutoSavePluginConfig> configList = List.of(
+            MainConfig.INSTANCE,
+            PlayerDataConfig.INSTANCE,
+            ResponseConfig.INSTANCE
+    );
+
+    private static final List<Command> commandList = List.of(
+            AiChanCommand.INSTANCE,
+            MinecraftUserCommand.INSTANCE,
+            MinecraftAdminCommand.INSTANCE,
+            SayCommand.INSTANCE,
+            CmdCommand.INSTANCE
+    );
+
     private AiChanMirai() {
-        super(new JvmPluginDescriptionBuilder("fun.kaituo.aichan-mirai", "0.1.0")
-                .info("Welcome back, my master!")
-                .name("AiChan-mirai")
-                .build());
+        super(
+                new JvmPluginDescriptionBuilder("fun.kaituo.aichan-mirai", "0.1.0")
+                        .info("Welcome back, my master!")
+                        .name("AiChan-mirai")
+                        .build()
+        );
     }
 
     private final Queue<Map.Entry<Long, String>> groupMessageQueue = new LinkedList<>();
@@ -55,30 +74,33 @@ public final class AiChanMirai extends JavaPlugin {
 
     private final List<Future<Void>> activeTasks = new ArrayList<>();
 
-    public final Validator<String> validator = new StringValidator(){};
+    public final Validator<String> validator = new StringValidator() {
+    };
 
 
     public void queueCommandReplyMessage(CommandSender sender, String content) {
         commandReplyQueue.add(new AbstractMap.SimpleEntry<>(sender, content));
     }
+
     public void queueGroupMessage(Long groupId, String content) {
         groupMessageQueue.add(new AbstractMap.SimpleEntry<>(groupId, content));
     }
-    private void sendGroupMessage(Long groupId, String content){
+
+    private void sendGroupMessage(Long groupId, String content) {
         Bot bot;
         try {
             bot = Bot.getInstance(MainConfig.INSTANCE.getSenderId());
         } catch (NoSuchElementException e) {
-            getLogger().warning("Bot " + MainConfig.INSTANCE.getSenderId() + " 不存在，消息发送失败！",e);
+            getLogger().warning(String.format("Bot %s 不存在，消息发送失败！", MainConfig.INSTANCE.getSenderId()), e);
             return;
         }
         if (!bot.isOnline()) {
-            getLogger().warning("Bot " + bot.getId() + " 已离线，消息发送失败！");
+            getLogger().warning(String.format("Bot %s 已离线，消息发送失败！", bot.getId()));
             return;
         }
         Group group = bot.getGroup(groupId);
         if (group == null) {
-            getLogger().warning("QQ群 " + groupId + " 获取失败，消息发送失败！");
+            getLogger().warning(String.format("QQ 群 %s 获取失败，消息发送失败！", groupId));
             return;
         }
         group.sendMessage(content);
@@ -86,23 +108,21 @@ public final class AiChanMirai extends JavaPlugin {
 
 
     public void saveAllPluginConfig() {
-        savePluginConfig(MainConfig.INSTANCE);
-        savePluginConfig(PlayerDataConfig.INSTANCE);
-        savePluginConfig(ResponseConfig.INSTANCE);
+        for (AutoSavePluginConfig config : configList) {
+            savePluginConfig(config);
+        }
     }
 
     public void reloadAllPluginConfig() {
-        reloadPluginConfig(MainConfig.INSTANCE);
-        reloadPluginConfig(PlayerDataConfig.INSTANCE);
-        reloadPluginConfig(ResponseConfig.INSTANCE);
+        for (AutoSavePluginConfig config : configList) {
+            savePluginConfig(config);
+        }
     }
 
     private void registerCommands() {
-        CommandManager.INSTANCE.registerCommand(AiChanCommand.INSTANCE, true);
-        CommandManager.INSTANCE.registerCommand(MinecraftUserCommand.INSTANCE, true);
-        CommandManager.INSTANCE.registerCommand(MinecraftAdminCommand.INSTANCE, true);
-        CommandManager.INSTANCE.registerCommand(SayCommand.INSTANCE, true);
-        CommandManager.INSTANCE.registerCommand(CmdCommand.INSTANCE, true);
+        for (Command command : commandList) {
+            CommandManager.INSTANCE.registerCommand(command, true);
+        }
     }
 
     public void cancelTasks() {
@@ -111,6 +131,7 @@ public final class AiChanMirai extends JavaPlugin {
         }
         activeTasks.clear();
     }
+
     public void registerTasks() {
         activeTasks.add(getScheduler().repeating(MainConfig.INSTANCE.getAutoSaveInterval(), this::saveAllPluginConfig));
         activeTasks.add(
@@ -132,6 +153,7 @@ public final class AiChanMirai extends JavaPlugin {
         activeTasks.add(
                 getScheduler().repeating(PlayerDataConfig.INSTANCE.getCleanInterval(), PlayerDataConfig.INSTANCE::clean));
     }
+
     private void subscribeEvents() {
         EventChannel<Event> eventChannel = GlobalEventChannel.INSTANCE.parentScope(this);
         eventChannel.subscribeAlways(GroupMessageEvent.class, AiChanMiraiMessageHandlers.INSTANCE::response);
@@ -160,7 +182,7 @@ public final class AiChanMirai extends JavaPlugin {
     }
 
     @Override
-    public void onDisable(){
+    public void onDisable() {
         saveAllPluginConfig();
         getLogger().info("小爱-mirai 已停止");
     }
