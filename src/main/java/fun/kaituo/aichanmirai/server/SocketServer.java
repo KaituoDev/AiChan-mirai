@@ -23,13 +23,8 @@ public class SocketServer {
         Key key = new Key(MainConfig.INSTANCE.getToken().get(0));
         Token token = Token.generate(key, data);
 
-        AiChanMirai.INSTANCE.getLogger().info(token.serialise());
-        AiChanMirai.INSTANCE.getLogger().info(key.serialise());
-
         String encryptedData = token.serialise();
 
-        AiChanMirai.INSTANCE.getLogger().info(data);
-        AiChanMirai.INSTANCE.getLogger().info(encryptedData);
         for (INonBlockingConnection c: new ArrayList<>(ServerHandler.INSTANCE.connections)) {
             if (c == null)
                 continue;

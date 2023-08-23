@@ -47,13 +47,10 @@ public class ServerHandler implements IDataHandler, IConnectHandler, IIdleTimeou
     public boolean onData(INonBlockingConnection nbc) throws IOException,
             BufferUnderflowException {
         String encryptedData = nbc.readStringByDelimiter(SocketPacket.DELIMITER);
-        logger.info(encryptedData);
 
         Token token = Token.fromString(encryptedData);
         Key key = new Key(MainConfig.INSTANCE.getToken().get(0));
 
-        logger.info(token.serialise());
-        logger.info(key.serialise());
 
         String data = "";
         try {
@@ -64,7 +61,6 @@ public class ServerHandler implements IDataHandler, IConnectHandler, IIdleTimeou
             return true;
 
         }
-        logger.info(data);
 
         SocketPacket packet = SocketPacket.parsePacket(data);
         switch (packet.getPacketType()) {
