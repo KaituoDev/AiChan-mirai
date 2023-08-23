@@ -20,10 +20,15 @@ public class SocketServer {
     public void sendPacket(SocketPacket packet) {
 
         String data = JSON.toJSONString(packet);
-        Key key = new Key(MainConfig.INSTANCE.getToken().get(0));
-        Token token = Token.generate(key, data);
-
-        String encryptedData = token.serialise();
+        String encryptedData;
+        try {
+            Key key = new Key(MainConfig.INSTANCE.getToken().get(0));
+            Token token = Token.generate(key, data);
+            encryptedData = token.serialise();
+        } catch (Exception e) {
+            AiChanMirai.INSTANCE.getLogger().warning("信息加密失败，请检查key是否合法！", e);
+            return;
+        }
 
         for (INonBlockingConnection c : new ArrayList<>(ServerHandler.INSTANCE.connections)) {
             if (c == null || !c.isOpen())
