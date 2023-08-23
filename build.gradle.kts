@@ -15,7 +15,7 @@ plugins {
 }
 
 group = "fun.kaituo.aichanmirai"
-version = "0.1.0"
+version = "0.1.1"
 
 repositories {
     if (System.getenv("CI")?.toBoolean() != true) {
