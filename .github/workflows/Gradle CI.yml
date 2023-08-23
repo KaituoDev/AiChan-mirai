@@ -20,7 +20,7 @@ jobs:
     name: Gradle-Build
     
     # The type of runner that the job will run on
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -43,5 +43,6 @@ jobs:
       # Build
       - name: Make gradlew executable
         run: chmod +x ./gradlew
+
       - name: Build with Gradle
         run: ./gradlew build
