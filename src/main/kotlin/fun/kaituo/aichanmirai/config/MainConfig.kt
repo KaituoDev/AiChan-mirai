@@ -16,6 +16,7 @@ object MainConfig : AutoSavePluginConfig("MainConfig") {
 
     @ValueDescription("机器人的QQ号")
     val senderId by value<Long>(123456)
+
     @ValueDescription("启用通讯的群")
     val messagingGroup by value<Long>(123456)
 

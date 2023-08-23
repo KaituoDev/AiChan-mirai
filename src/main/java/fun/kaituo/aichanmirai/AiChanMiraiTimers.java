@@ -32,7 +32,7 @@ public class AiChanMiraiTimers {
     }
 
 
-    private final List<String> responseInCoolDown = new ArrayList<String>();
+    private final List<String> responseInCoolDown = new ArrayList<>();
 
     public boolean checkResponseAvailability(String key) {
         for (String string : new ArrayList<>(responseInCoolDown)) {
