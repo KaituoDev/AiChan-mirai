@@ -30,10 +30,10 @@ object MainConfig : AutoSavePluginConfig("MainConfig") {
     val bindPort by value<Int>(30300)
 
     @ValueDescription("客户端认证的密码")
-    val token : MutableList<String> by value()
+    val token: MutableList<String> by value()
 
     fun genKey() {
-        val keyString : String = Key.generateKey().serialise()
+        val keyString: String = Key.generateKey().serialise()
         if (token.isEmpty()) {
             token.add(0, keyString)
         } else {
