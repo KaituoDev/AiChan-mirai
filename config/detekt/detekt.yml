@@ -607,7 +607,7 @@ style:
     active: true
     maxJumpCount: 1
   MagicNumber:
-    active: true
+    active: false
     excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**', '**/*.kts']
     ignoreNumbers:
       - '-1'
@@ -674,7 +674,7 @@ style:
     active: false
   ReturnCount:
     active: true
-    max: 2
+    max: 5
     excludedFunctions:
       - 'equals'
     excludeLabeled: false
@@ -952,7 +952,7 @@ formatting:
     active: true
     autoCorrect: true
   PackageName:
-    active: true
+    active: false
     autoCorrect: true
   ParameterListSpacing:
     active: false
