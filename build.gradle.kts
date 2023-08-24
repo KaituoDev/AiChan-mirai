@@ -1,21 +1,21 @@
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
-
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 plugins {
     val kotlinVersion = "1.9.10"
-    kotlin("jvm") version (kotlinVersion)
-    kotlin("plugin.serialization") version (kotlinVersion)
+    kotlin("jvm").version(kotlinVersion)
+    kotlin("plugin.serialization").version(kotlinVersion)
 
     val detektVersion = "1.23.1"
-    id("io.gitlab.arturbosch.detekt") version (detektVersion)
+    id("io.gitlab.arturbosch.detekt").version(detektVersion)
 
-    id("net.mamoe.mirai-console") version ("2.15.0")
-    id("com.github.johnrengelman.shadow") version ("8.1.1")  // FIXME
+    id("org.ajoberstar.grgit").version("5.2.0")
+
+    id("net.mamoe.mirai-console").version("2.15.0")
+    id("com.github.johnrengelman.shadow").version("8.1.1")  // FIXME
 }
-
-group = "fun.kaituo.aichanmirai"
-version = "0.1.1"
 
 repositories {
     if (System.getenv("CI")?.toBoolean() != true) {
@@ -23,6 +23,7 @@ repositories {
     }
     mavenCentral()
 }
+
 
 dependencies {
     // https://mvnrepository.com/artifact/org.xsocket/xSocket
@@ -34,6 +35,29 @@ dependencies {
 
     val detektVersion = "1.23.1"
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:$detektVersion")
+
+}
+
+base {
+    archivesName = "${property("archives_base_name")}"
+
+
+    val ENV = System.getenv()
+
+
+    version = "${property("version")}+build.${
+        if (ENV["GITHUB_RUN_NUMBER"].toBoolean()) {
+            ENV["GITHUB_RUN_NUMBER"]
+        } else {
+            LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
+        }
+    }+${
+        if (grgit.status().isClean()) {
+            grgit.head().abbreviatedId
+        } else {
+            "uncommitted"
+        }
+    }"
 
 }
 
