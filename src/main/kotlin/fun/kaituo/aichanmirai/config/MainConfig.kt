@@ -1,10 +1,10 @@
 package `fun`.kaituo.aichanmirai.config
 
 import com.macasaet.fernet.Key
-import `fun`.kaituo.aichanmirai.AiChanMirai
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.ValueDescription
 import net.mamoe.mirai.console.data.value
+import `fun`.kaituo.aichanmirai.AiChanMirai.INSTANCE as AiChan
 
 object MainConfig : AutoSavePluginConfig("MainConfig") {
 
@@ -23,7 +23,7 @@ object MainConfig : AutoSavePluginConfig("MainConfig") {
     @ValueDescription("启用欢迎和应答的群")
     val responseGroups: MutableList<Long> by value()
 
-    @ValueDescription("绑定的IP地址")
+    @ValueDescription("绑定的 IP 地址")
     val bindAddress by value<String>("0.0.0.0")
 
     @ValueDescription("绑定的端口")
@@ -33,12 +33,12 @@ object MainConfig : AutoSavePluginConfig("MainConfig") {
     val token: MutableList<String> by value()
 
     fun genKey() {
-        val keyString: String = Key.generateKey().serialise()
+        val keyString = Key.generateKey().serialise()
         if (token.isEmpty()) {
             token.add(0, keyString)
         } else {
             token[0] = keyString
         }
-        AiChanMirai.INSTANCE.saveAllPluginConfig()
+        AiChan.saveAllPluginConfig()
     }
 }

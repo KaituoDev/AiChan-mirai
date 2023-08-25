@@ -1,30 +1,30 @@
 package `fun`.kaituo.aichanmirai.command
 
-import `fun`.kaituo.aichanmirai.AiChanMirai
 import `fun`.kaituo.aichanmirai.config.MainConfig
 import `fun`.kaituo.aichanmirai.config.ResponseConfig
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.CompositeCommand
+import `fun`.kaituo.aichanmirai.AiChanMirai.INSTANCE as AiChan
 
 object AiChanCommand : CompositeCommand(
-    AiChanMirai.INSTANCE,
+    AiChan,
     "ai",
     description = "小爱主命令",
 ) {
     @SubCommand
     @Description("重载小爱配置和数据")
     suspend fun CommandSender.reload() {
-        AiChanMirai.INSTANCE.cancelTasks()
-        AiChanMirai.INSTANCE.reloadAllPluginConfig()
-        AiChanMirai.INSTANCE.registerTasks()
-        AiChanMirai.INSTANCE.queueCommandReplyMessage(this, "已重新加载配置和数据")
+        AiChan.cancelTasks()
+        AiChan.reloadAllPluginConfig()
+        AiChan.registerTasks()
+        AiChan.queueCommandReplyMessage(this, "已重新加载配置和数据")
     }
 
     @SubCommand
     @Description("保存小爱配置和数据")
     suspend fun CommandSender.save() {
-        AiChanMirai.INSTANCE.saveAllPluginConfig()
-        AiChanMirai.INSTANCE.queueCommandReplyMessage(this, "已保存配置和数据")
+        AiChan.saveAllPluginConfig()
+        AiChan.queueCommandReplyMessage(this, "已保存配置和数据")
     }
 
     @SubCommand
@@ -32,7 +32,7 @@ object AiChanCommand : CompositeCommand(
     suspend fun CommandSender.set(key: String, vararg reply: String) {
         val replyString = reply.joinToString(" ")
         ResponseConfig.exactMatchResponses[key] = replyString
-        AiChanMirai.INSTANCE.queueCommandReplyMessage(
+        AiChan.queueCommandReplyMessage(
             this,
             "成功设置关键词 $key 触发回答 $replyString"
         )
@@ -42,7 +42,7 @@ object AiChanCommand : CompositeCommand(
     @Description("删除精确触发关键词")
     suspend fun CommandSender.rm(key: String) {
         ResponseConfig.exactMatchResponses.remove(key)
-        AiChanMirai.INSTANCE.queueCommandReplyMessage(
+        AiChan.queueCommandReplyMessage(
             this,
             "成功删除关键词 $key (如果存在)"
         )
@@ -53,7 +53,7 @@ object AiChanCommand : CompositeCommand(
     suspend fun CommandSender.setc(key: String, vararg reply: String) {
         val replyString = reply.joinToString(" ")
         ResponseConfig.containMatchResponses[key] = replyString
-        AiChanMirai.INSTANCE.queueCommandReplyMessage(
+        AiChan.queueCommandReplyMessage(
             this,
             "成功设置(包含)关键词 $key 触发回答 $replyString"
         )
@@ -63,7 +63,7 @@ object AiChanCommand : CompositeCommand(
     @Description("删除包含触发关键词")
     suspend fun CommandSender.rmc(key: String) {
         ResponseConfig.containMatchResponses.remove(key)
-        AiChanMirai.INSTANCE.queueCommandReplyMessage(
+        AiChan.queueCommandReplyMessage(
             this,
             "成功删除(包含)关键词 $key (如果存在)"
         )
@@ -80,13 +80,13 @@ object AiChanCommand : CompositeCommand(
             包含匹配关键词有:
             ${containMatchKeywords.joinToString(" ")}
         """.trimIndent()
-        AiChanMirai.INSTANCE.queueCommandReplyMessage(this, message)
+        AiChan.queueCommandReplyMessage(this, message)
     }
 
     @SubCommand
     @Description("刷新 Socket 通信 Token")
     suspend fun CommandSender.genkey() {
         MainConfig.genKey()
-        AiChanMirai.INSTANCE.queueCommandReplyMessage(this, "成功刷新 Token，请前往配置文件复制")
+        AiChan.queueCommandReplyMessage(this, "成功刷新 Token，请前往配置文件复制")
     }
 }

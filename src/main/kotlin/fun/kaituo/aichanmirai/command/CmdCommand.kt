@@ -1,16 +1,16 @@
 package `fun`.kaituo.aichanmirai.command
 
-import `fun`.kaituo.aichanmirai.AiChanMirai
 import `fun`.kaituo.aichanmirai.config.MainConfig
 import `fun`.kaituo.aichanmirai.config.ResponseConfig
 import `fun`.kaituo.aichanmirai.server.SocketPacket
-import `fun`.kaituo.aichanmirai.server.SocketServer
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.MemberCommandSender
 import net.mamoe.mirai.console.command.SimpleCommand
+import `fun`.kaituo.aichanmirai.AiChanMirai.INSTANCE as AiChan
+import `fun`.kaituo.aichanmirai.server.SocketServer.INSTANCE as SocketServer
 
 object CmdCommand : SimpleCommand(
-    AiChanMirai.INSTANCE,
+    AiChan,
     "cmd",
     "c",
     description = "向 MC 服务器发送并运行指令"
@@ -19,7 +19,7 @@ object CmdCommand : SimpleCommand(
     @Handler
     suspend fun CommandSender.cmd(trigger: String, vararg cmd: String) {
         if (this !is MemberCommandSender || this.group.id != MainConfig.messagingGroup) {
-            AiChanMirai.INSTANCE.queueCommandReplyMessage(this, ResponseConfig.groupOnlyMessage)
+            AiChan.queueCommandReplyMessage(this, ResponseConfig.groupOnlyMessage)
             return
         }
 
@@ -27,6 +27,6 @@ object CmdCommand : SimpleCommand(
         val command = cmd.joinToString(" ")
         packet[0] = trigger
         packet[1] = command
-        SocketServer.INSTANCE.sendPacket(packet)
+        SocketServer.sendPacket(packet)
     }
 }

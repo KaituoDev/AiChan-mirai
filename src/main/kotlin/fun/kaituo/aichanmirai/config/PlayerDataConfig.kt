@@ -1,16 +1,16 @@
 package `fun`.kaituo.aichanmirai.config
 
-import `fun`.kaituo.aichanmirai.AiChanMirai
 import `fun`.kaituo.aichanmirai.server.SocketPacket
-import `fun`.kaituo.aichanmirai.server.SocketServer
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.ValueDescription
 import net.mamoe.mirai.console.data.value
+import `fun`.kaituo.aichanmirai.AiChanMirai.INSTANCE as AiChan
+import `fun`.kaituo.aichanmirai.server.SocketServer.INSTANCE as SocketServer
 
 object PlayerDataConfig : AutoSavePluginConfig("UserData") {
 
-    private const val ID_UNDEFINED: String = "!UNDEFINED!"
-    private const val ID_UNLINKED: String = "!UNLINKED!"
+    private const val ID_UNDEFINED = "!UNDEFINED!"
+    private const val ID_UNLINKED = "!UNLINKED!"
 
     @ValueDescription("自动清理冗余信息间隔(ms)")
     val cleanInterval by value<Long>(1800000)
@@ -43,7 +43,7 @@ object PlayerDataConfig : AutoSavePluginConfig("UserData") {
 
             if (!isLinked && !isBanned) {
                 val id: Long = entry.key
-                AiChanMirai.INSTANCE.logger.info("Removed empty profile for user $id")
+                AiChan.logger.info("Removed empty profile for user $id")
                 iterator.remove()
             }
         }
@@ -53,14 +53,14 @@ object PlayerDataConfig : AutoSavePluginConfig("UserData") {
         if (searchMCId(mcId) != -1L) {
             return LinkResult.FAIL_ALREADY_EXIST
         }
-        val player: PlayerData = getUserData(userId)
+        val player = getUserData(userId)
         if (player.isLinked) {
             return LinkResult.FAIL_ALREADY_LINKED
         }
         player.isLinked = true
         player.mcId = mcId
         setUserData(player)
-        SocketServer.INSTANCE.sendPacket(player.getStatusPacket())
+        SocketServer.sendPacket(player.getStatusPacket())
         return LinkResult.SUCCESS
     }
 
@@ -72,7 +72,7 @@ object PlayerDataConfig : AutoSavePluginConfig("UserData") {
 
         val unlinkPacket = SocketPacket(SocketPacket.PacketType.PLAYER_NOT_FOUND)
         unlinkPacket.set(0, player.mcId)
-        SocketServer.INSTANCE.sendPacket(unlinkPacket)
+        SocketServer.sendPacket(unlinkPacket)
 
         player.isLinked = false
         player.mcId = ID_UNLINKED
@@ -81,31 +81,31 @@ object PlayerDataConfig : AutoSavePluginConfig("UserData") {
     }
 
     fun ban(userId: Long): BanResult {
-        val player: PlayerData = getUserData(userId)
+        val player = getUserData(userId)
         if (player.isBanned) {
             return BanResult.FAIL_ALREADY_BANNED
         }
         player.isBanned = true
         setUserData(player)
 
-        SocketServer.INSTANCE.sendPacket(player.getStatusPacket())
+        SocketServer.sendPacket(player.getStatusPacket())
         return BanResult.SUCCESS
     }
 
     fun pardon(userId: Long): PardonResult {
-        val player: PlayerData = getUserData(userId)
+        val player = getUserData(userId)
         if (!player.isBanned) {
             return PardonResult.FAIL_NOT_BANNED
         }
         player.isBanned = false
         setUserData(player)
 
-        SocketServer.INSTANCE.sendPacket(player.getStatusPacket())
+        SocketServer.sendPacket(player.getStatusPacket())
         return PardonResult.SUCCESS
     }
 
     fun banId(mcId: String): BanResult {
-        val userId: Long = searchMCId(mcId)
+        val userId = searchMCId(mcId)
         if (userId == -1L) {
             return BanResult.FAIL_NOT_FOUND
         }
@@ -113,7 +113,7 @@ object PlayerDataConfig : AutoSavePluginConfig("UserData") {
     }
 
     fun pardonId(mcId: String): PardonResult {
-        val userId: Long = searchMCId(mcId)
+        val userId = searchMCId(mcId)
         if (userId == -1L) {
             return PardonResult.FAIL_NOT_FOUND
         }
@@ -128,9 +128,9 @@ object PlayerDataConfig : AutoSavePluginConfig("UserData") {
         player?.putIfAbsent("isBanned", "false")
     }
 
-    // -1 means user does not exist
     fun searchMCId(id: String): Long {
         if (id == ID_UNDEFINED || id == ID_UNLINKED) {
+            // user does not exist
             return -1
         }
         playerDataMap.forEach { (key, value) ->
@@ -147,7 +147,7 @@ object PlayerDataConfig : AutoSavePluginConfig("UserData") {
         }
         val player: MutableMap<String, String>? = playerDataMap[userId]
         if (player != null) {
-            val mcId: String = player["MCID"] ?: ID_UNDEFINED
+            val mcId = player["MCID"] ?: ID_UNDEFINED
             return PlayerData(
                 userId,
                 player["isLinked"].toBoolean(),
@@ -158,7 +158,7 @@ object PlayerDataConfig : AutoSavePluginConfig("UserData") {
         return PlayerData(userId, false, "ERROR", false)
     }
 
-    fun setUserData(userData: PlayerData) {
+    private fun setUserData(userData: PlayerData) {
         if (!playerDataMap.containsKey(userData.userId)) {
             initUser(userData.userId)
         }
