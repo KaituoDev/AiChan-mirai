@@ -87,48 +87,44 @@ public final class AiChanMirai extends JavaPlugin {
     }
 
     private void sendGroupMessage(Long groupId, String content) {
-        Bot bot;
         try {
-            bot = Bot.getInstance(MainConfig.INSTANCE.getSenderId());
+            Bot bot = Bot.getInstance(MainConfig.INSTANCE.getSenderId());
+
+            if (!bot.isOnline()) {
+                getLogger().warning(String.format("Bot %s 已离线，消息发送失败！", bot.getId()));
+                return;
+            }
+
+            Group group = bot.getGroup(groupId);
+            if (group == null) {
+                getLogger().warning(String.format("QQ 群 %s 获取失败，消息发送失败！", groupId));
+                return;
+            }
+            group.sendMessage(content);
+
+
         } catch (NoSuchElementException e) {
             getLogger().warning(String.format("Bot %s 不存在，消息发送失败！", MainConfig.INSTANCE.getSenderId()), e);
-            return;
         }
-        if (!bot.isOnline()) {
-            getLogger().warning(String.format("Bot %s 已离线，消息发送失败！", bot.getId()));
-            return;
-        }
-        Group group = bot.getGroup(groupId);
-        if (group == null) {
-            getLogger().warning(String.format("QQ 群 %s 获取失败，消息发送失败！", groupId));
-            return;
-        }
-        group.sendMessage(content);
+
+
     }
 
 
     public void saveAllPluginConfig() {
-        for (AutoSavePluginConfig config : configList) {
-            savePluginConfig(config);
-        }
+        configList.forEach(this::savePluginConfig);
     }
 
     public void reloadAllPluginConfig() {
-        for (AutoSavePluginConfig config : configList) {
-            savePluginConfig(config);
-        }
+        configList.forEach(this::savePluginConfig);
     }
 
     private void registerCommands() {
-        for (Command command : commandList) {
-            CommandManager.INSTANCE.registerCommand(command, true);
-        }
+        commandList.forEach(command -> CommandManager.INSTANCE.registerCommand(command, true));
     }
 
     public void cancelTasks() {
-        for (Future<Void> future : activeTasks) {
-            future.cancel(false);
-        }
+        activeTasks.forEach(future -> future.cancel(false));
         activeTasks.clear();
     }
 
@@ -149,9 +145,12 @@ public final class AiChanMirai extends JavaPlugin {
                 commandReplyQueue.poll();
             }
         }));
-        activeTasks.add(getScheduler().repeating(ResponseConfig.INSTANCE.getGreetCoolDown(), AiChanMiraiTimers.INSTANCE::deductGreetCoolDown));
-        activeTasks.add(
-                getScheduler().repeating(PlayerDataConfig.INSTANCE.getCleanInterval(), PlayerDataConfig.INSTANCE::clean));
+        activeTasks.add(getScheduler().repeating(
+                ResponseConfig.INSTANCE.getGreetCoolDown(), AiChanMiraiTimers.INSTANCE::deductGreetCoolDown)
+        );
+        activeTasks.add(getScheduler().repeating(
+                PlayerDataConfig.INSTANCE.getCleanInterval(), PlayerDataConfig.INSTANCE::clean)
+        );
     }
 
     private void subscribeEvents() {

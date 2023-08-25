@@ -37,11 +37,12 @@ object PlayerDataConfig : AutoSavePluginConfig("UserData") {
     fun clean() {
         val iterator = playerDataMap.iterator()
         while (iterator.hasNext()) {
-            // If player is not linked and is not banned
-            if (!iterator.next().value["isLinked"].toBoolean() &&
-                !iterator.next().value["isBanned"].toBoolean()
-            ) {
-                val id: Long = iterator.next().key
+            val entry = iterator.next()
+            val isLinked = entry.value["isLinked"].toBoolean()
+            val isBanned = entry.value["isBanned"].toBoolean()
+
+            if (!isLinked && !isBanned) {
+                val id: Long = entry.key
                 AiChanMirai.INSTANCE.logger.info("Removed empty profile for user $id")
                 iterator.remove()
             }
@@ -132,8 +133,8 @@ object PlayerDataConfig : AutoSavePluginConfig("UserData") {
         if (id == ID_UNDEFINED || id == ID_UNLINKED) {
             return -1
         }
-        for ((key, value) in playerDataMap.toMap()) {
-            if (value["MCID"]?.equals(id) == true) {
+        playerDataMap.forEach { (key, value) ->
+            if (value["MCID"] == id) {
                 return key
             }
         }
@@ -146,10 +147,7 @@ object PlayerDataConfig : AutoSavePluginConfig("UserData") {
         }
         val player: MutableMap<String, String>? = playerDataMap[userId]
         if (player != null) {
-            var mcId: String? = player["MCID"]
-            if (mcId == null) {
-                mcId = ID_UNDEFINED
-            }
+            val mcId: String = player["MCID"] ?: ID_UNDEFINED
             return PlayerData(
                 userId,
                 player["isLinked"].toBoolean(),

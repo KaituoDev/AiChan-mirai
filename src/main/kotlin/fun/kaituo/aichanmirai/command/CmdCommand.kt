@@ -18,14 +18,11 @@ object CmdCommand : SimpleCommand(
 
     @Handler
     suspend fun CommandSender.cmd(trigger: String, vararg cmd: String) {
-        if (this !is MemberCommandSender) {
+        if (this !is MemberCommandSender || this.group.id != MainConfig.messagingGroup) {
             AiChanMirai.INSTANCE.queueCommandReplyMessage(this, ResponseConfig.groupOnlyMessage)
             return
         }
-        if (this.group.id != MainConfig.messagingGroup) {
-            AiChanMirai.INSTANCE.queueCommandReplyMessage(this, ResponseConfig.groupOnlyMessage)
-            return
-        }
+
         val packet = SocketPacket(SocketPacket.PacketType.SERVER_COMMAND)
         val command = cmd.joinToString(" ")
         packet[0] = trigger

@@ -1,6 +1,6 @@
 package fun.kaituo.aichanmirai.server;
 
-import com.alibaba.fastjson2.JSON;
+import com.google.gson.Gson;
 import com.macasaet.fernet.Key;
 import com.macasaet.fernet.Token;
 import fun.kaituo.aichanmirai.AiChanMirai;
@@ -18,15 +18,14 @@ public class SocketServer {
     public static final SocketServer INSTANCE = new SocketServer();
 
     public void sendPacket(SocketPacket packet) {
-
-        String data = JSON.toJSONString(packet);
+        String data = new Gson().toJson(packet);
         String encryptedData;
         try {
             Key key = new Key(MainConfig.INSTANCE.getToken().get(0));
             Token token = Token.generate(key, data);
             encryptedData = token.serialise();
         } catch (Exception e) {
-            AiChanMirai.INSTANCE.getLogger().warning("信息加密失败，请检查key是否合法！", e);
+            AiChanMirai.INSTANCE.getLogger().warning("信息加密失败，请检查 Key 是否合法！", e);
             return;
         }
 

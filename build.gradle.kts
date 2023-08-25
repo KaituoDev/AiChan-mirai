@@ -26,12 +26,14 @@ repositories {
 
 
 dependencies {
-    // https://mvnrepository.com/artifact/org.xsocket/xSocket
-    implementation("org.xsocket:xSocket:${property("xsocket_version")}")
-    // https://mvnrepository.com/artifact/com.alibaba/fastjson
-    implementation("com.alibaba:fastjson:${property("fastjson_version")}")
+    // https://mvnrepository.com/artifact/com.google.code.gson/gson
+    implementation("com.google.code.gson:gson:${property("gson_version")}")
+
     // https://mvnrepository.com/artifact/com.macasaet.fernet/fernet-java8
     implementation("com.macasaet.fernet:fernet-java8:${property("fernet_version")}")
+
+    // https://mvnrepository.com/artifact/org.xsocket/xSocket
+    implementation("org.xsocket:xSocket:${property("xsocket_version")}")
 
     val detektVersion = "1.23.1"
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:$detektVersion")

@@ -1,12 +1,13 @@
 package fun.kaituo.aichanmirai.server;
 
-import com.alibaba.fastjson.annotation.JSONField;
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONArray;
-import com.alibaba.fastjson2.JSONObject;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.annotations.Expose;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 // Remember to update Packet on the other end
 public class SocketPacket {
@@ -23,31 +24,19 @@ public class SocketPacket {
     }
 
     public static SocketPacket parsePacket(String string) {
-        JSONObject packetObject = (JSONObject) JSON.parse(string);
-        JSONArray contentArray = packetObject.getJSONArray("content");
+        JsonObject packetObject = JsonParser.parseString(string).getAsJsonObject();
+        JsonArray contentArray = packetObject.get("content").getAsJsonArray();
         SocketPacket result = new SocketPacket(
-                PacketType.valueOf(packetObject.getString("packetType"))
+                PacketType.valueOf(packetObject.get("packetType").getAsString())
         );
         if (contentArray != null) {
-            for (int i = 0; i < contentArray.size(); i += 1) {
-                result.set(i, contentArray.getString(i));
-            }
+            IntStream.range(0, contentArray.size()).forEach(
+                    i -> result.set(i, contentArray.get(i).getAsString())
+            );
         }
         return result;
     }
 
-    /*
-    public String toJSONString() {
-        JSONObject packetObject = new JSONObject();
-        packetObject.put("type", packetType.name());
-        JSONArray contentArray = packetObject.putArray("content");
-        for (int i = 0; i < content.size(); i += 1) {
-            contentArray.set(i, content.get(i));
-        }
-        return JSON.toJSONString(packetObject);
-    }
-
-    */
 
     public void set(int index, String data) {
         content.add(index, data);
@@ -65,8 +54,8 @@ public class SocketPacket {
         return content;
     }
 
-    @JSONField
+    @Expose
     private final PacketType packetType;
-    @JSONField
+    @Expose
     private final List<String> content = new ArrayList<>();
 }

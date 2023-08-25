@@ -26,8 +26,7 @@ public class ServerHandler implements IDataHandler, IConnectHandler, IIdleTimeou
     public final List<INonBlockingConnection> connections = new ArrayList<>();
 
     @Override
-    public boolean onConnect(INonBlockingConnection nbc) throws
-            BufferUnderflowException {
+    public boolean onConnect(INonBlockingConnection nbc) throws BufferUnderflowException {
         nbc.setEncoding("UTF-8");
         String remoteName = nbc.getRemoteAddress().getHostName();
         logger.info(String.format("客户端 %s %s 已连接", nbc.getId(), remoteName));
@@ -45,8 +44,7 @@ public class ServerHandler implements IDataHandler, IConnectHandler, IIdleTimeou
     }
 
     @Override
-    public boolean onData(INonBlockingConnection nbc) throws IOException,
-            BufferUnderflowException {
+    public boolean onData(INonBlockingConnection nbc) throws IOException, BufferUnderflowException {
         String encryptedData = nbc.readStringByDelimiter(SocketPacket.DELIMITER);
 
         Token token = Token.fromString(encryptedData);
@@ -58,7 +56,7 @@ public class ServerHandler implements IDataHandler, IConnectHandler, IIdleTimeou
             data = token.validateAndDecrypt(key, AiChanMirai.INSTANCE.validator);
         } catch (Exception e) {
             connections.remove(nbc);
-            AiChanMirai.INSTANCE.getLogger().warning("解密失败，断开客户端连接！");
+            AiChanMirai.INSTANCE.getLogger().warning(String.format("解密失败，断开客户端连接！异常信息：%s", e.getMessage()));
             return true;
         }
 

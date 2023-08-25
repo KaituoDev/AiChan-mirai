@@ -21,16 +21,14 @@ object SayCommand : SimpleCommand(
 
     @Handler
     suspend fun CommandSender.say(trigger: String, vararg msg: String) {
-        if (this !is MemberCommandSender) {
+        if (this !is MemberCommandSender || this.group.id != MainConfig.messagingGroup) {
             AiChanMirai.INSTANCE.queueCommandReplyMessage(this, ResponseConfig.groupOnlyMessage)
             return
         }
-        if (this.group.id != MainConfig.messagingGroup) {
-            AiChanMirai.INSTANCE.queueCommandReplyMessage(this, ResponseConfig.groupOnlyMessage)
-            return
-        }
+
         val player: PlayerData = PlayerDataConfig.getUserData(this.user.id)
         val nick: String = this.user.nameCardOrNick
+
         if (player.isBanned) {
             AiChanMirai.INSTANCE.queueCommandReplyMessage(this, "$nick，你已被封禁！")
         } else if (!player.isLinked) {

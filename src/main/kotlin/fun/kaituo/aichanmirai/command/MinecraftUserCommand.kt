@@ -23,35 +23,27 @@ object MinecraftUserCommand : CompositeCommand(
         if (this !is UserCommandSender) {
             AiChanMirai.INSTANCE.queueCommandReplyMessage(this, ResponseConfig.userOnlyMessage)
         }
+
         val userSender = this as UserCommandSender
         val result: PlayerDataConfig.LinkResult = PlayerDataConfig.link(userSender.user.id, mcId)
         val nick: String = userSender.user.nameCardOrNick
-        when (result) {
-            PlayerDataConfig.LinkResult.SUCCESS -> {
-                AiChanMirai.INSTANCE.queueCommandReplyMessage(this, "$nick，你已为自己的 QQ 号链接至 ID：$mcId")
-            }
 
-            PlayerDataConfig.LinkResult.FAIL_ALREADY_LINKED -> {
-                AiChanMirai.INSTANCE.queueCommandReplyMessage(this, "$nick，你已经链接过了！请联系管理员解绑！")
-            }
-
-            PlayerDataConfig.LinkResult.FAIL_ALREADY_EXIST -> {
-                AiChanMirai.INSTANCE.queueCommandReplyMessage(this, "$nick，该 ID 已被其他用户链接了！")
-            }
+        val message = when (result) {
+            PlayerDataConfig.LinkResult.SUCCESS -> "$nick，你已为自己的 QQ 号链接至 ID：$mcId"
+            PlayerDataConfig.LinkResult.FAIL_ALREADY_LINKED -> "$nick，你已经链接过了！请联系管理员解绑！"
+            PlayerDataConfig.LinkResult.FAIL_ALREADY_EXIST -> "$nick，该 ID 已被其他用户链接了！"
         }
+        AiChanMirai.INSTANCE.queueCommandReplyMessage(this, message)
     }
 
     @SubCommand("list", "l")
     @Description("列出在线玩家")
     suspend fun CommandSender.list() {
-        if (this !is MemberCommandSender) {
+        if (this !is MemberCommandSender || this.group.id != MainConfig.messagingGroup) {
             AiChanMirai.INSTANCE.queueCommandReplyMessage(this, ResponseConfig.groupOnlyMessage)
             return
         }
-        if (this.group.id != MainConfig.messagingGroup) {
-            AiChanMirai.INSTANCE.queueCommandReplyMessage(this, ResponseConfig.groupOnlyMessage)
-            return
-        }
+
         val packet = SocketPacket(SocketPacket.PacketType.LIST_REQUEST)
         SocketServer.INSTANCE.sendPacket(packet)
     }

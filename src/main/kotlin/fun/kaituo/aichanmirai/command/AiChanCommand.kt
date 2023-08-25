@@ -72,14 +72,14 @@ object AiChanCommand : CompositeCommand(
     @SubCommand
     @Description("列出所有关键词")
     suspend fun CommandSender.list() {
-        val exactMatchKeywords = ResponseConfig.exactMatchResponses.keys.joinToString(" ")
-        val containMatchKeywords = ResponseConfig.containMatchResponses.keys.joinToString(" ")
-        val message = listOf(
-            "精确匹配关键词有:",
-            exactMatchKeywords,
-            "包含匹配关键词有:",
-            containMatchKeywords
-        ).joinToString("\n")
+        val exactMatchKeywords = ResponseConfig.exactMatchResponses.keys
+        val containMatchKeywords = ResponseConfig.containMatchResponses.keys
+        val message = """
+            精确匹配关键词有:
+            ${exactMatchKeywords.joinToString(" ")}
+            包含匹配关键词有:
+            ${containMatchKeywords.joinToString(" ")}
+        """.trimIndent()
         AiChanMirai.INSTANCE.queueCommandReplyMessage(this, message)
     }
 
