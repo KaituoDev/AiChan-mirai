@@ -24,7 +24,7 @@ public class AiChanMiraiTimers {
     }
 
     public void addGreetCoolDown() {
-        if (greetCounter >= 0 && greetCounter < 2 ) {
+        if (greetCounter >= 0 && greetCounter < 2) {
             greetCounter++;
         } else {
             greetCounter = 0;
