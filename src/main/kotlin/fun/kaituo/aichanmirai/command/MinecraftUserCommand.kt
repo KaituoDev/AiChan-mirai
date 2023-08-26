@@ -20,18 +20,18 @@ object MinecraftUserCommand : CompositeCommand(
     @SubCommand
     @Description("为自己链接 QQ 号和 MCID")
     suspend fun CommandSender.link(mcId: String) {
-        if (this !is UserCommandSender) {
-            AiChan.queueCommandReplyMessage(this, ResponseConfig.userOnlyMessage)
-        }
-
-        val userSender = this as UserCommandSender
-        val result = PlayerDataConfig.link(userSender.user.id, mcId)
-        val nick = userSender.user.nameCardOrNick
-
-        val message = when (result) {
-            PlayerDataConfig.LinkResult.SUCCESS -> "$nick，你已为自己的 QQ 号链接至 ID：$mcId"
-            PlayerDataConfig.LinkResult.FAIL_ALREADY_LINKED -> "$nick，你已经链接过了！请联系管理员解绑！"
-            PlayerDataConfig.LinkResult.FAIL_ALREADY_EXIST -> "$nick，该 ID 已被其他用户链接了！"
+        val message = when {
+            (this !is UserCommandSender) -> ResponseConfig.userOnlyMessage
+            else -> {
+                val userSender = this@link
+                val result = PlayerDataConfig.link(userSender.user.id, mcId)
+                val nick = userSender.user.nameCardOrNick
+                when (result) {
+                    PlayerDataConfig.LinkResult.SUCCESS -> "$nick，你已为自己的 QQ 号链接至 ID：$mcId"
+                    PlayerDataConfig.LinkResult.FAIL_ALREADY_LINKED -> "$nick，你已经链接过了！请联系管理员解绑！"
+                    PlayerDataConfig.LinkResult.FAIL_ALREADY_EXIST -> "$nick，该 ID 已被其他用户链接了！"
+                }
+            }
         }
         AiChan.queueCommandReplyMessage(this, message)
     }

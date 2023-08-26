@@ -140,16 +140,12 @@ object PlayerDataConfig : AutoSavePluginConfig("UserData") {
     }
 
     fun searchMCId(id: String): Long {
-        if (id == ID_UNDEFINED || id == ID_UNLINKED) {
-            // user does not exist
-            return -1
-        }
-        playerDataMap.forEach { (key, value) ->
-            if (value["MCID"] == id) {
-                return key
-            }
-        }
-        return -1
+        return id.takeIf { it !in listOf(ID_UNDEFINED, ID_UNLINKED) }
+            ?.let { searchId ->
+                playerDataMap.entries.firstNotNullOfOrNull { (key, value) ->
+                    if (value["MCID"] == searchId) key else null
+                }
+            } ?: -1
     }
 
     fun getUserData(userId: Long): PlayerData {
