@@ -28,19 +28,20 @@ object SayCommand : SimpleCommand(
         val player = PlayerDataConfig.getUserData(this.user.id)
         val nick = this.user.nameCardOrNick
 
-        if (player.isBanned) {
-            AiChan.queueCommandReplyMessage(this, "$nick，你已被封禁！")
-        } else if (!player.isLinked) {
-            AiChan.queueCommandReplyMessage(this, "$nick，你还未链接 MCID！")
-        } else {
-            val packet = SocketPacket(SocketPacket.PacketType.SERVER_TEXT)
-            val mcId = player.mcId
-            val message = msg
-                .joinToString(" ")
-                .replace("&", "§")
-            packet[0] = trigger
-            packet[1] = "$mcId: $message"
-            SocketServer.sendPacket(packet)
+        when {
+            player.isBanned -> AiChan.queueCommandReplyMessage(this, "$nick，你已被封禁！")
+            !player.isLinked -> AiChan.queueCommandReplyMessage(this, "$nick，你还未链接 MCID！")
+            else -> {
+                val mcId = player.mcId
+                val message = msg
+                    .joinToString(" ")
+                    .replace("&", "§")
+                val packet = SocketPacket(SocketPacket.PacketType.SERVER_TEXT).apply {
+                    this[0] = trigger
+                    this[1] = "$mcId: $message"
+                }
+                SocketServer.sendPacket(packet)
+            }
         }
     }
 }

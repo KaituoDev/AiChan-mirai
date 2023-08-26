@@ -8,11 +8,11 @@ class PlayerData(var userId: Long, var isLinked: Boolean, var mcId: String, var 
     }
 
     fun getStatusPacket(): SocketPacket {
-        val packet = SocketPacket(SocketPacket.PacketType.PLAYER_STATUS)
-        packet[0] = userId.toString()
-        packet[1] = isLinked.toString()
-        packet[2] = mcId
-        packet[3] = isBanned.toString()
-        return packet
+        return SocketPacket(SocketPacket.PacketType.PLAYER_STATUS).apply {
+            this[0] = userId.toString()
+            this[1] = isLinked.toString()
+            this[2] = mcId
+            this[3] = isBanned.toString()
+        }
     }
 }

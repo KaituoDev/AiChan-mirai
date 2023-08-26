@@ -79,11 +79,7 @@ object MinecraftAdminCommand : CompositeCommand(
         val id = PlayerDataConfig.searchMCId(mcId)
 
         val message = when (result) {
-            PlayerDataConfig.BanResult.FAIL_NOT_FOUND -> {
-                AiChan.queueCommandReplyMessage(this, "不存在 MCID 为 $mcId 的用户！")
-                return
-            }
-
+            PlayerDataConfig.BanResult.FAIL_NOT_FOUND -> "不存在 MCID 为 $mcId 的用户！"
             PlayerDataConfig.BanResult.SUCCESS -> "已封禁用户 ($id)"
             PlayerDataConfig.BanResult.FAIL_ALREADY_BANNED -> "用户 ($id) 已处于封禁状态！"
         }
@@ -97,11 +93,7 @@ object MinecraftAdminCommand : CompositeCommand(
         val id = PlayerDataConfig.searchMCId(mcId)
 
         val message = when (result) {
-            PlayerDataConfig.PardonResult.FAIL_NOT_FOUND -> {
-                AiChan.queueCommandReplyMessage(this, "不存在 MCID 为 $mcId 的用户！")
-                return
-            }
-
+            PlayerDataConfig.PardonResult.FAIL_NOT_FOUND -> "不存在 MCID 为 $mcId 的用户！"
             PlayerDataConfig.PardonResult.SUCCESS -> "已解封用户 ($id)"
             PlayerDataConfig.PardonResult.FAIL_NOT_BANNED -> "用户 ($id) 未被封禁！"
         }
@@ -131,11 +123,9 @@ object MinecraftAdminCommand : CompositeCommand(
 
 fun queryPlayerStatus(id: Long, mcId: String): String {
     val player = PlayerDataConfig.getUserData(id)
-    val isLinked = player.isLinked
-    val message = buildList {
-        add("用户 $id:")
-        add(if (player.isBanned) "已封禁" else "未封禁")
-        add(if (isLinked) "链接的 MCID: $mcId" else "未链接")
-    }
-    return message.joinToString("\n")
+    return """
+        用户 $id:
+        ${if (player.isBanned) "已封禁" else "未封禁"}
+        ${if (player.isLinked) "链接的 MCID: $mcId" else "未链接"}
+    """.trimIndent()
 }

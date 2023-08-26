@@ -35,97 +35,108 @@ object PlayerDataConfig : AutoSavePluginConfig("UserData") {
     }
 
     fun clean() {
-        val iterator = playerDataMap.iterator()
-        while (iterator.hasNext()) {
-            val entry = iterator.next()
-            val isLinked = entry.value["isLinked"].toBoolean()
-            val isBanned = entry.value["isBanned"].toBoolean()
+        playerDataMap.entries.removeIf { (id, status) ->
+            val isLinked = status["isLinked"].toBoolean()
+            val isBanned = status["isBanned"].toBoolean()
+            val shouldRemove = !isLinked && !isBanned
 
-            if (!isLinked && !isBanned) {
-                val id: Long = entry.key
+            if (shouldRemove) {
                 AiChan.logger.info("Removed empty profile for user $id")
-                iterator.remove()
             }
+            shouldRemove
         }
     }
 
     fun link(userId: Long, mcId: String): LinkResult {
-        if (searchMCId(mcId) != -1L) {
-            return LinkResult.FAIL_ALREADY_EXIST
-        }
+        val existingUserId = searchMCId(mcId)
         val player = getUserData(userId)
-        if (player.isLinked) {
-            return LinkResult.FAIL_ALREADY_LINKED
+
+        return when {
+            (existingUserId != -1L) -> LinkResult.FAIL_ALREADY_EXIST
+            player.isLinked -> LinkResult.FAIL_ALREADY_LINKED
+            else -> {
+                player.apply {
+                    isLinked = true
+                    this.mcId = mcId
+                }
+                setUserData(player)
+                SocketServer.sendPacket(player.getStatusPacket())
+                LinkResult.SUCCESS
+            }
         }
-        player.isLinked = true
-        player.mcId = mcId
-        setUserData(player)
-        SocketServer.sendPacket(player.getStatusPacket())
-        return LinkResult.SUCCESS
     }
 
     fun unlink(userId: Long): UnlinkResult {
         val player: PlayerData = getUserData(userId)
-        if (!player.isLinked) {
-            return UnlinkResult.FAIL_NOT_LINKED
+
+        return when {
+            !player.isLinked -> UnlinkResult.FAIL_NOT_LINKED
+            else -> {
+                val unlinkPacket = SocketPacket(SocketPacket.PacketType.PLAYER_NOT_FOUND)
+                unlinkPacket.set(0, player.mcId)
+                SocketServer.sendPacket(unlinkPacket)
+
+                player.apply {
+                    isLinked = false
+                    mcId = ID_UNLINKED
+                }
+                UnlinkResult.SUCCESS
+            }
         }
-
-        val unlinkPacket = SocketPacket(SocketPacket.PacketType.PLAYER_NOT_FOUND)
-        unlinkPacket.set(0, player.mcId)
-        SocketServer.sendPacket(unlinkPacket)
-
-        player.isLinked = false
-        player.mcId = ID_UNLINKED
-        setUserData(player)
-        return UnlinkResult.SUCCESS
     }
 
     fun ban(userId: Long): BanResult {
         val player = getUserData(userId)
-        if (player.isBanned) {
-            return BanResult.FAIL_ALREADY_BANNED
-        }
-        player.isBanned = true
-        setUserData(player)
 
-        SocketServer.sendPacket(player.getStatusPacket())
-        return BanResult.SUCCESS
+        return when {
+            player.isBanned -> BanResult.FAIL_ALREADY_BANNED
+            else -> {
+                player.apply { isBanned = true }
+                setUserData(player)
+
+                SocketServer.sendPacket(player.getStatusPacket())
+                return BanResult.SUCCESS
+            }
+        }
     }
 
     fun pardon(userId: Long): PardonResult {
         val player = getUserData(userId)
-        if (!player.isBanned) {
-            return PardonResult.FAIL_NOT_BANNED
-        }
-        player.isBanned = false
-        setUserData(player)
 
-        SocketServer.sendPacket(player.getStatusPacket())
-        return PardonResult.SUCCESS
+        return when {
+            !player.isBanned -> PardonResult.FAIL_NOT_BANNED
+            else -> {
+                player.apply { isBanned = false }
+                setUserData(player)
+
+                SocketServer.sendPacket(player.getStatusPacket())
+                return PardonResult.SUCCESS
+            }
+        }
     }
 
     fun banId(mcId: String): BanResult {
         val userId = searchMCId(mcId)
-        if (userId == -1L) {
-            return BanResult.FAIL_NOT_FOUND
+        return when {
+            (userId == -1L) -> BanResult.FAIL_NOT_FOUND
+            else -> ban(userId)
         }
-        return ban(userId)
     }
 
     fun pardonId(mcId: String): PardonResult {
         val userId = searchMCId(mcId)
-        if (userId == -1L) {
-            return PardonResult.FAIL_NOT_FOUND
+        return when {
+            (userId == -1L) -> PardonResult.FAIL_NOT_FOUND
+            else -> pardon(userId)
         }
-        return pardon(userId)
     }
 
     private fun initUser(userId: Long) {
-        playerDataMap.putIfAbsent(userId, mutableMapOf())
-        val player: MutableMap<String, String>? = playerDataMap[userId]
-        player?.putIfAbsent("isLinked", "false")
-        player?.putIfAbsent("MCID", ID_UNDEFINED)
-        player?.putIfAbsent("isBanned", "false")
+        playerDataMap.putIfAbsent(userId, mutableMapOf())?.apply {
+            putIfAbsent("isLinked", "false")
+            putIfAbsent("MCID", ID_UNDEFINED)
+            putIfAbsent("isBanned", "false")
+        }
     }
 
     fun searchMCId(id: String): Long {
@@ -142,31 +153,30 @@ object PlayerDataConfig : AutoSavePluginConfig("UserData") {
     }
 
     fun getUserData(userId: Long): PlayerData {
-        if (!playerDataMap.containsKey(userId)) {
+        val player: MutableMap<String, String> = playerDataMap.getOrPut(userId) {
             initUser(userId)
+            mutableMapOf()
         }
-        val player: MutableMap<String, String>? = playerDataMap[userId]
-        if (player != null) {
-            val mcId = player["MCID"] ?: ID_UNDEFINED
-            return PlayerData(
-                userId,
-                player["isLinked"].toBoolean(),
-                mcId,
-                player["isBanned"].toBoolean()
-            )
-        }
-        return PlayerData(userId, false, "ERROR", false)
+        val mcId = player["MCID"] ?: ID_UNDEFINED
+
+        return PlayerData(
+            userId,
+            player["isLinked"].toBoolean(),
+            mcId,
+            player["isBanned"].toBoolean()
+        )
     }
 
     private fun setUserData(userData: PlayerData) {
-        if (!playerDataMap.containsKey(userData.userId)) {
+        val player: MutableMap<String, String> = playerDataMap.getOrPut(userData.userId) {
             initUser(userData.userId)
+            mutableMapOf()
         }
-        val player: MutableMap<String, String>? = playerDataMap[userData.userId]
-        if (player != null) {
-            player["isLinked"] = userData.isLinked.toString()
-            player["MCID"] = userData.mcId
-            player["isBanned"] = userData.isBanned.toString()
+
+        player.apply {
+            this["isLinked"] = userData.isLinked.toString()
+            this["MCID"] = userData.mcId
+            this["isBanned"] = userData.isBanned.toString()
         }
     }
 }
