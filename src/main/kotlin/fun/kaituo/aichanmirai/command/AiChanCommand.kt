@@ -35,45 +35,27 @@ object AiChanCommand : CompositeCommand(
     @Description("设定精确触发关键词")
     suspend fun CommandSender.set(key: String, vararg reply: String) {
         val replyString = reply.joinToString(" ")
-        val message = when (key) {
-            "!!ALL!!" -> "不能设置这个关键词哦"
-            else -> {
-                ResponseConfig.exactMatchResponses[key] = replyString
-                "成功设置关键词 $key 触发回答 $replyString"
-            }
-        }
-        AiChan.queueCommandReplyMessage(this, message)
+        ResponseConfig.exactMatchResponses[key] = replyString
+        AiChan.queueCommandReplyMessage(
+            this,
+            "成功设置关键词 $key 触发回答 $replyString"
+        )
     }
 
     @SubCommand
     @Description("删除精确触发关键词")
     suspend fun CommandSender.rm(key: String) {
-        val message = when (key) {
-            "!!ALL!!" -> {
-                ResponseConfig.exactMatchResponses.clear()
-                "成功删除所有关键词!"
-            }
-
-            else -> {
-                ResponseConfig.exactMatchResponses.remove(key)
-                "成功删除关键词 $key (如果存在)"
-            }
-        }
-        AiChan.queueCommandReplyMessage(this, message)
+        ResponseConfig.exactMatchResponses.remove(key)
+        AiChan.queueCommandReplyMessage(
+            this,
+            "成功删除关键词 $key (如果存在)"
+        )
     }
 
     @SubCommand
     @Description("设定包含触发关键词")
     suspend fun CommandSender.setc(key: String, vararg reply: String) {
         val replyString = reply.joinToString(" ")
-        val message = when (key) {
-            "!!ALL!!" -> "不能设置这个关键词哦"
-            else -> {
-                ResponseConfig.containMatchResponses[key] = replyString
-                "成功设置(包含)关键词 $key 触发回答 $replyString"
-            }
-        }
-        AiChan.queueCommandReplyMessage(this, message)
         ResponseConfig.containMatchResponses[key] = replyString
         AiChan.queueCommandReplyMessage(
             this,
@@ -84,18 +66,11 @@ object AiChanCommand : CompositeCommand(
     @SubCommand
     @Description("删除包含触发关键词")
     suspend fun CommandSender.rmc(key: String) {
-        val message = when (key) {
-            "!!ALL!!" -> {
-                ResponseConfig.containMatchResponses.clear()
-                "成功删除所有(包含)关键词!"
-            }
-
-            else -> {
-                ResponseConfig.containMatchResponses.remove(key)
-                "成功删除(包含)关键词 $key (如果存在)"
-            }
-        }
-        AiChan.queueCommandReplyMessage(this, message)
+        ResponseConfig.containMatchResponses.remove(key)
+        AiChan.queueCommandReplyMessage(
+            this,
+            "成功删除(包含)关键词 $key (如果存在)"
+        )
     }
 
     @SubCommand
