@@ -21,7 +21,7 @@ public class SocketServer {
         String data = new Gson().toJson(packet);
         String encryptedData;
         try {
-            Key key = new Key(MainConfig.INSTANCE.getToken().get(0));
+            Key key = new Key(MainConfig.INSTANCE.getToken());
             Token token = Token.generate(key, data);
             encryptedData = token.serialise();
         } catch (Exception e) {
@@ -53,11 +53,11 @@ public class SocketServer {
             InetAddress address = InetAddress.getByName(MainConfig.INSTANCE.getBindAddress());
             this.server = new Server(address, MainConfig.INSTANCE.getBindPort(), ServerHandler.INSTANCE);
             this.server.setFlushmode(IConnection.FlushMode.ASYNC);
-            AiChanMirai.INSTANCE.getLogger().info(
+            AiChanMirai.INSTANCE.logger.info(
                     String.format("服务器 %s:%s 已初始化", this.server.getLocalAddress(), MainConfig.INSTANCE.getBindPort())
             );
         } catch (Exception e) {
-            AiChanMirai.INSTANCE.getLogger().warning("服务器初始化失败", e);
+            AiChanMirai.INSTANCE.logger.warning("服务器初始化失败", e);
         }
     }
 }

@@ -48,7 +48,7 @@ public class ServerHandler implements IDataHandler, IConnectHandler, IIdleTimeou
         String encryptedData = nbc.readStringByDelimiter(SocketPacket.DELIMITER);
 
         Token token = Token.fromString(encryptedData);
-        Key key = new Key(MainConfig.INSTANCE.getToken().get(0));
+        Key key = new Key(MainConfig.INSTANCE.getToken());
 
 
         String data = "";
