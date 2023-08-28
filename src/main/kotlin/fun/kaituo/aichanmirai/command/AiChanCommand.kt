@@ -79,10 +79,8 @@ object AiChanCommand : CompositeCommand(
         val exactMatchKeywords = ResponseConfig.exactMatchResponses.keys
         val containMatchKeywords = ResponseConfig.containMatchResponses.keys
         val message = """
-            精确匹配关键词有:
-            ${exactMatchKeywords.joinToString(" ")}
-            包含匹配关键词有:
-            ${containMatchKeywords.joinToString(" ")}
+            精确匹配关键词有: ${exactMatchKeywords.joinToString(" ")}
+            包含匹配关键词有: ${containMatchKeywords.joinToString(" ")}
         """.trimIndent()
         AiChan.queueCommandReplyMessage(this, message)
     }
