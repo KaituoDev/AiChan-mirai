@@ -8,7 +8,6 @@ import fun.kaituo.aichanmirai.config.PlayerDataConfig;
 import fun.kaituo.aichanmirai.config.ResponseConfig;
 import fun.kaituo.aichanmirai.server.SocketServer;
 import net.mamoe.mirai.Bot;
-import net.mamoe.mirai.console.command.Command;
 import net.mamoe.mirai.console.command.CommandManager;
 import net.mamoe.mirai.console.command.CommandSender;
 import net.mamoe.mirai.console.data.AutoSavePluginConfig;
@@ -21,6 +20,7 @@ import net.mamoe.mirai.event.EventChannel;
 import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MemberJoinEvent;
+import net.mamoe.mirai.utils.MiraiLogger;
 
 import java.io.IOException;
 import java.util.*;
@@ -50,14 +50,6 @@ public final class AiChanMirai extends JavaPlugin {
             MainConfig.INSTANCE,
             PlayerDataConfig.INSTANCE,
             ResponseConfig.INSTANCE
-    );
-
-    private static final List<Command> commandList = List.of(
-            AiChanCommand.INSTANCE,
-            MinecraftUserCommand.INSTANCE,
-            MinecraftAdminCommand.INSTANCE,
-            SayCommand.INSTANCE,
-            CmdCommand.INSTANCE
     );
 
     private AiChanMirai() {
@@ -120,7 +112,11 @@ public final class AiChanMirai extends JavaPlugin {
     }
 
     private void registerCommands() {
-        commandList.forEach(command -> CommandManager.INSTANCE.registerCommand(command, true));
+        CommandManager.INSTANCE.registerCommand(AiChanCommand.INSTANCE, true);
+        CommandManager.INSTANCE.registerCommand(MinecraftUserCommand.INSTANCE, true);
+        CommandManager.INSTANCE.registerCommand(MinecraftAdminCommand.INSTANCE, true);
+        CommandManager.INSTANCE.registerCommand(SayCommand.INSTANCE, true);
+        CommandManager.INSTANCE.registerCommand(CmdCommand.INSTANCE, true);
     }
 
     public void cancelTasks() {
