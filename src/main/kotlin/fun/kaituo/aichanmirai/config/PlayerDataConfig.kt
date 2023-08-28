@@ -36,12 +36,12 @@ object PlayerDataConfig : AutoSavePluginConfig("UserData") {
 
     fun clean() {
         playerDataMap.entries.removeIf { (id, status) ->
-            val isLinked = status["isLinked"].toBoolean()
-            val isBanned = status["isBanned"].toBoolean()
+            val isLinked = status["isLinked"]?.toBoolean() ?: false
+            val isBanned = status["isBanned"]?.toBoolean() ?: false
             val shouldRemove = !isLinked && !isBanned
 
             if (shouldRemove) {
-                AiChan.logger.info("Removed empty profile for user $id")
+                AiChan.logger.info("Remove empty profile for user $id")
             }
             shouldRemove
         }
@@ -157,9 +157,9 @@ object PlayerDataConfig : AutoSavePluginConfig("UserData") {
 
         return PlayerData(
             userId,
-            player["isLinked"].toBoolean(),
+            player["isLinked"]?.toBoolean() ?: false,
             mcId,
-            player["isBanned"].toBoolean()
+            player["isBanned"]?.toBoolean() ?: false
         )
     }
 
