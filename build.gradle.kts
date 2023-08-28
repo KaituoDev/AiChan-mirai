@@ -51,13 +51,13 @@ base {
         if (ENV["GITHUB_RUN_NUMBER"].toBoolean()) {
             ENV["GITHUB_RUN_NUMBER"]
         } else {
-            LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
+            LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd.HHmm"))
         }
     }+${
         if (grgit.status().isClean()) {
             grgit.head().abbreviatedId
         } else {
-            "uncommitted"
+            "dev"
         }
     }"
 
