@@ -25,7 +25,7 @@ public class SocketServer {
             Token token = Token.generate(key, data);
             encryptedData = token.serialise();
         } catch (Exception e) {
-            AiChanMirai.INSTANCE.getLogger().warning("信息加密失败，请检查 Key 是否合法！", e);
+            AiChanMirai.INSTANCE.logger.warning("信息加密失败，请检查 Key 是否合法！", e);
             return;
         }
 
@@ -35,7 +35,7 @@ public class SocketServer {
             try {
                 c.write(encryptedData + SocketPacket.DELIMITER);
             } catch (IOException e) {
-                AiChanMirai.INSTANCE.getLogger().warning("发送消息失败", e);
+                AiChanMirai.INSTANCE.logger.warning("发送消息失败", e);
             }
         }
 

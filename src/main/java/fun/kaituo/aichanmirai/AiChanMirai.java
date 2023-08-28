@@ -59,7 +59,11 @@ public final class AiChanMirai extends JavaPlugin {
                         .name("AiChan-mirai")
                         .build()
         );
+
+        this.logger = getLogger();
     }
+
+    public final MiraiLogger logger;
 
     private final Queue<Map.Entry<Long, String>> groupMessageQueue = new LinkedList<>();
     private final Queue<Map.Entry<CommandSender, String>> commandReplyQueue = new LinkedList<>();
@@ -83,25 +87,24 @@ public final class AiChanMirai extends JavaPlugin {
             Bot bot = Bot.getInstance(MainConfig.INSTANCE.getSenderId());
 
             if (!bot.isOnline()) {
-                getLogger().warning(String.format("Bot %s 已离线，消息发送失败！", bot.getId()));
+                logger.warning(String.format("Bot %s 已离线，消息发送失败！", bot.getId()));
                 return;
             }
 
             Group group = bot.getGroup(groupId);
             if (group == null) {
-                getLogger().warning(String.format("QQ 群 %s 获取失败，消息发送失败！", groupId));
+                logger.warning(String.format("QQ 群 %s 获取失败，消息发送失败！", groupId));
                 return;
             }
             group.sendMessage(content);
 
 
         } catch (NoSuchElementException e) {
-            getLogger().warning(String.format("Bot %s 不存在，消息发送失败！", MainConfig.INSTANCE.getSenderId()), e);
+            logger.warning(String.format("Bot %s 不存在，消息发送失败！", MainConfig.INSTANCE.getSenderId()), e);
         }
 
 
     }
-
 
     public void saveAllPluginConfig() {
         configList.forEach(this::savePluginConfig);
@@ -159,7 +162,7 @@ public final class AiChanMirai extends JavaPlugin {
     @Override
     public void onEnable() {
         reloadAllPluginConfig();
-        getLogger().info("小爱-mirai 已启用");
+        logger.info("小爱-mirai 已启用");
 
         registerCommands();
         registerTasks();
@@ -172,14 +175,14 @@ public final class AiChanMirai extends JavaPlugin {
         try {
             SocketServer.INSTANCE.getServer().start();
         } catch (IOException e) {
-            getLogger().warning("服务器启动失败", e);
+            logger.warning("服务器启动失败", e);
         }
     }
 
     @Override
     public void onDisable() {
         saveAllPluginConfig();
-        getLogger().info("小爱-mirai 已停止");
+        logger.info("小爱-mirai 已停止");
     }
 }
 

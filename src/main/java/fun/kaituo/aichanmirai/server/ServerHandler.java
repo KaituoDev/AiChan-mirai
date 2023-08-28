@@ -17,7 +17,7 @@ public class ServerHandler implements IDataHandler, IConnectHandler, IIdleTimeou
     public static final ServerHandler INSTANCE = new ServerHandler();
 
     private ServerHandler() {
-        logger = AiChanMirai.INSTANCE.getLogger();
+        logger = AiChanMirai.INSTANCE.logger;
     }
 
     private final MiraiLogger logger;
@@ -56,7 +56,7 @@ public class ServerHandler implements IDataHandler, IConnectHandler, IIdleTimeou
             data = token.validateAndDecrypt(key, AiChanMirai.INSTANCE.validator);
         } catch (Exception e) {
             connections.remove(nbc);
-            AiChanMirai.INSTANCE.getLogger().warning(String.format("解密失败，断开客户端连接！异常信息：%s", e.getMessage()));
+            logger.warning(String.format("解密失败，断开客户端连接！异常信息：%s", e.getMessage()));
             return true;
         }
 

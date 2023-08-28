@@ -78,7 +78,7 @@ public class AiChanMiraiMessageHandlers {
                             () -> AiChanMiraiTimers.INSTANCE.setResponseAvailable(key)
                     );
                 } else {
-                    AiChanMirai.INSTANCE.getLogger().info(String.format(
+                    AiChanMirai.INSTANCE.logger.info(String.format(
                             "%s关键词 %s 冷却中",
                             responses == ResponseConfig.INSTANCE.getExactMatchResponses() ? "精确" : "包含",
                             key

@@ -20,7 +20,7 @@ public class AiChanMiraiTimers {
         } else {
             greetCounter = 0;
         }
-        //AiChanMirai.INSTANCE.getLogger().info("Refreshed greet counter to " + greetCounter);
+        //AiChanMirai.INSTANCE.logger.info("Refreshed greet counter to " + greetCounter);
     }
 
     public void addGreetCoolDown() {
