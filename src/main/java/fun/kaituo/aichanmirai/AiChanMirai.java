@@ -107,11 +107,15 @@ public final class AiChanMirai extends JavaPlugin {
     }
 
     public void saveAllPluginConfig() {
-        configList.forEach(this::savePluginConfig);
+        savePluginConfig(MainConfig.INSTANCE);
+        savePluginConfig(PlayerDataConfig.INSTANCE);
+        savePluginConfig(ResponseConfig.INSTANCE);
     }
 
     public void reloadAllPluginConfig() {
-        configList.forEach(this::savePluginConfig);
+        reloadPluginConfig(MainConfig.INSTANCE);
+        reloadPluginConfig(PlayerDataConfig.INSTANCE);
+        reloadPluginConfig(ResponseConfig.INSTANCE);
     }
 
     private void registerCommands() {
@@ -123,7 +127,9 @@ public final class AiChanMirai extends JavaPlugin {
     }
 
     public void cancelTasks() {
-        activeTasks.forEach(future -> future.cancel(false));
+        for (Future<Void> future : activeTasks) {
+            future.cancel(false);
+        }
         activeTasks.clear();
     }
 
