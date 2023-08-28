@@ -1,7 +1,5 @@
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 plugins {
     val kotlinVersion = "1.9.10"
@@ -42,25 +40,13 @@ dependencies {
 
 base {
     archivesName = "${property("archives_base_name")}"
-
-
-    val ENV = System.getenv()
-
-
-    version = "${property("version")}+build.${
-        if (ENV["GITHUB_RUN_NUMBER"].toBoolean()) {
-            ENV["GITHUB_RUN_NUMBER"]
-        } else {
-            LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd.HHmm"))
-        }
-    }+${
+    version = "${property("version")}+${
         if (grgit.status().isClean()) {
             grgit.head().abbreviatedId
         } else {
             "dev"
         }
     }"
-
 }
 
 mirai {
