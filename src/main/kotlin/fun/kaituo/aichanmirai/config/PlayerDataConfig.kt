@@ -80,6 +80,7 @@ object PlayerDataConfig : AutoSavePluginConfig("UserData") {
                     isLinked = false
                     mcId = ID_UNLINKED
                 }
+                setUserData(player)
                 UnlinkResult.SUCCESS
             }
         }
