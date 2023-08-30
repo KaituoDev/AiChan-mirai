@@ -6,6 +6,7 @@ import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.contact.nameCardOrNick
 import `fun`.kaituo.aichanmirai.AiChanMirai.INSTANCE as AiChan
+import `fun`.kaituo.aichanmirai.server.SocketServer.INSTANCE as SocketServer
 
 object MinecraftAdminCommand : CompositeCommand(
     AiChan,
@@ -15,15 +16,26 @@ object MinecraftAdminCommand : CompositeCommand(
 
     @SubCommand
     @Description("为他人链接 QQ 号和 MCID")
-    suspend fun CommandSender.link(user: User, mcId: String) {
-        val result = PlayerDataConfig.link(user.id, mcId)
+    suspend fun CommandSender.link(user: User, vararg mcId: String) {
+        val result = PlayerDataConfig.link(user.id, mcId[0])
         val nick = user.nameCardOrNick
         val id = user.id
 
         val message = when (result) {
-            PlayerDataConfig.LinkResult.SUCCESS -> "已成功为用户 $nick($id) 链接 ID 至 $mcId"
-            PlayerDataConfig.LinkResult.FAIL_ALREADY_LINKED -> "用户 $nick($id) 已经链接过了！"
+            PlayerDataConfig.LinkResult.SUCCESS -> "已成功为用户 $nick($id) 链接 ID 至 ${mcId[0]}"
             PlayerDataConfig.LinkResult.FAIL_ALREADY_EXIST -> "这个 ID 已被其他用户链接了！"
+            PlayerDataConfig.LinkResult.FAIL_ALREADY_LINKED -> {
+                val arg = runCatching { mcId[1] }.getOrDefault("")
+                if (arg in listOf("--force", "-f")) {
+                    val player = PlayerDataConfig.getUserData(id)
+                    player.apply { this.mcId = mcId[0] }
+                    PlayerDataConfig.setUserData(player)
+                    SocketServer.sendPacket(player.getStatusPacket())
+                    "已强制为用户 $nick($id) 链接 ID 至 ${mcId[0]}！"
+                } else {
+                    "用户 $nick($id) 已经链接过了(可在命令末尾加上 --force 或 -f 以强制覆盖)！"
+                }
+            }
         }
         AiChan.queueCommandReplyMessage(this, message)
     }

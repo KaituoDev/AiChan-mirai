@@ -164,7 +164,7 @@ object PlayerDataConfig : AutoSavePluginConfig("UserData") {
         )
     }
 
-    private fun setUserData(userData: PlayerData) {
+    fun setUserData(userData: PlayerData) {
         val player: MutableMap<String, String> = playerDataMap.getOrPut(userData.userId) {
             initUser(userData.userId)
             mutableMapOf()
