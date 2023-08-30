@@ -54,17 +54,24 @@ mirai {
 }
 
 detekt {
-    toolVersion = "1.23.1"
     parallel = true
     config.setFrom(file("config/detekt/detekt.yml"))
     buildUponDefaultConfig = true
     autoCorrect = false
 }
 
-tasks.withType<Detekt>().configureEach {
-    jvmTarget = "17"
-}
+tasks {
+    val jvmVersion = "17"
 
-tasks.withType<DetektCreateBaselineTask>().configureEach {
-    jvmTarget = "17"
+    withType<Detekt>().configureEach {
+        jvmTarget = jvmVersion
+    }
+
+    withType<DetektCreateBaselineTask>().configureEach {
+        jvmTarget = jvmVersion
+    }
+
+    compileKotlin {
+        dependsOn("detekt")
+    }
 }
