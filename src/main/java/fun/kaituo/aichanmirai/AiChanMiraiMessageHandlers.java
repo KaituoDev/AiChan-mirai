@@ -53,7 +53,6 @@ public class AiChanMiraiMessageHandlers {
             return;
         }
 
-
         if (e.getBot().getId() != MainConfig.INSTANCE.getSenderId()) {
             return;
         }
@@ -66,8 +65,10 @@ public class AiChanMiraiMessageHandlers {
     }
 
     private void handleMatchingResponse(String messageContent, Group group, Map<String, String> responses) {
+        String mode = responses == ResponseConfig.INSTANCE.getExactMatchResponses() ? "精确" : "包含";
         for (Map.Entry<String, String> entry : responses.entrySet()) {
-            if (messageContent.equals(entry.getKey()) || messageContent.contains(entry.getKey())) {
+            if ((messageContent.equals(entry.getKey()) && mode.equals("精确")) ||
+                    (messageContent.contains(entry.getKey()) && mode.equals("包含"))) {
                 String key = entry.getKey();
                 String value = entry.getValue();
                 if (AiChanMiraiTimers.INSTANCE.checkResponseAvailability(key)) {
@@ -80,7 +81,7 @@ public class AiChanMiraiMessageHandlers {
                 } else {
                     AiChanMirai.INSTANCE.logger.info(String.format(
                             "%s关键词 %s 冷却中",
-                            responses == ResponseConfig.INSTANCE.getExactMatchResponses() ? "精确" : "包含",
+                            mode,
                             key
                     ));
                 }
