@@ -55,8 +55,9 @@ object PlayerDataConfig : AutoSavePluginConfig("UserData") {
             (existingUserId != -1L) -> {
                 if (player.isLinked) {
                     LinkResult.FAIL_ALREADY_LINKED
+                } else {
+                    LinkResult.FAIL_ALREADY_EXIST
                 }
-                LinkResult.FAIL_ALREADY_EXIST
             }
             else -> {
                 player.apply {
