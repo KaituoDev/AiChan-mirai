@@ -1,6 +1,7 @@
 package `fun`.kaituo.aichanmirai.config
 
 import `fun`.kaituo.aichanmirai.server.SocketPacket
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.ValueDescription
 import net.mamoe.mirai.console.data.value
@@ -16,7 +17,7 @@ object PlayerDataConfig : AutoSavePluginConfig("UserData") {
     val cleanInterval by value<Long>(1800000)
 
     @ValueDescription("玩家信息")
-    val playerDataMap: MutableMap<Long, MutableMap<String, String>> by value()
+    val playerDataMap: MutableMap<Long, Player> by value()
 
     enum class LinkResult {
         SUCCESS, FAIL_ALREADY_EXIST, FAIL_ALREADY_LINKED
@@ -35,13 +36,11 @@ object PlayerDataConfig : AutoSavePluginConfig("UserData") {
     }
 
     fun clean() {
-        playerDataMap.entries.removeIf { (id, status) ->
-            val isLinked = status["isLinked"]?.toBoolean() ?: false
-            val isBanned = status["isBanned"]?.toBoolean() ?: false
-            val shouldRemove = !isLinked && !isBanned
+        playerDataMap.entries.removeIf { (id, player) ->
+            val shouldRemove = !player.isLinked && !player.isBanned
 
             if (shouldRemove) {
-                AiChan.logger.info("Remove empty profile for user $id")
+                AiChan.logger.info("Removed empty profile for user $id")
             }
             shouldRemove
         }
@@ -138,47 +137,49 @@ object PlayerDataConfig : AutoSavePluginConfig("UserData") {
     }
 
     private fun initUser(userId: Long) {
-        playerDataMap.putIfAbsent(userId, mutableMapOf())?.apply {
-            putIfAbsent("isLinked", "false")
-            putIfAbsent("MCID", ID_UNDEFINED)
-            putIfAbsent("isBanned", "false")
-        }
+        playerDataMap.putIfAbsent(userId, Player(false, ID_UNDEFINED, false))
     }
 
     fun searchMCId(id: String): Long {
         return id.takeIf { it !in listOf(ID_UNDEFINED, ID_UNLINKED) }
             ?.let { searchId ->
                 playerDataMap.entries.firstNotNullOfOrNull { (key, value) ->
-                    if (value["MCID"] == searchId) key else null
+                    if (value.MCID == searchId) key else null
                 }
             } ?: -1
     }
 
     fun getUserData(userId: Long): PlayerData {
-        val player: MutableMap<String, String> = playerDataMap.getOrPut(userId) {
+        val player: Player = playerDataMap.getOrPut(userId) {
             initUser(userId)
-            mutableMapOf()
+            Player(false, ID_UNDEFINED, false)
         }
-        val mcId = player["MCID"] ?: ID_UNDEFINED
+        println(player.toString())
+
+        val mcId = player.MCID
+        val isLinked = player.isLinked
 
         return PlayerData(
             userId,
-            player["isLinked"]?.toBoolean() ?: false,
+            isLinked,
             mcId,
-            player["isBanned"]?.toBoolean() ?: false
+            player.isBanned
         )
     }
 
     fun setUserData(userData: PlayerData) {
-        val player: MutableMap<String, String> = playerDataMap.getOrPut(userData.userId) {
+        val player: Player = playerDataMap.getOrPut(userData.userId) {
             initUser(userData.userId)
-            mutableMapOf()
+            Player(false, ID_UNDEFINED, false)
         }
 
         player.apply {
-            this["isLinked"] = userData.isLinked.toString()
-            this["MCID"] = userData.mcId
-            this["isBanned"] = userData.isBanned.toString()
+            isLinked = userData.isLinked
+            MCID = userData.mcId
+            isBanned = userData.isBanned
         }
     }
 }
+
+@Serializable
+data class Player(var isLinked: Boolean, var MCID: String, var isBanned: Boolean)
