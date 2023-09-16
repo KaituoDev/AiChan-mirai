@@ -15,19 +15,16 @@ public class AiChanMiraiTimers {
     }
 
     public void deductGreetCoolDown() {
-        if (greetCounter > 0 && greetCounter <= 2) {
-            greetCounter--;
-        } else {
+        greetCounter -= 1;
+        if (greetCounter < 0) {
             greetCounter = 0;
         }
-        //AiChanMirai.INSTANCE.logger.info("Refreshed greet counter to " + greetCounter);
     }
 
     public void addGreetCoolDown() {
-        if (greetCounter >= 0 && greetCounter < 2) {
-            greetCounter++;
-        } else {
-            greetCounter = 0;
+        greetCounter += 1;
+        if (greetCounter > 2) {
+            greetCounter = 2;
         }
     }
 
