@@ -3,7 +3,6 @@ package fun.kaituo.aichanmirai;
 import fun.kaituo.aichanmirai.config.MainConfig;
 import fun.kaituo.aichanmirai.config.ResponseConfig;
 import net.mamoe.mirai.Bot;
-import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MemberJoinEvent;
 
@@ -17,11 +16,11 @@ public class AiChanMiraiMessageHandlers {
     public void greet(GroupMessageEvent e) {
         Bot bot = e.getBot();
         long senderId = MainConfig.INSTANCE.getSenderId();
-        Group group = e.getGroup();
+        long groupId = e.getGroup().getId();
         String messageContent = e.getMessage().contentToString();
         int greetCounter = AiChanMiraiTimers.INSTANCE.getGreetCounter();
 
-        if (bot.getId() != senderId || !MainConfig.INSTANCE.getResponseGroups().contains(group.getId())) {
+        if (bot.getId() != senderId || !MainConfig.INSTANCE.getResponseGroups().contains(groupId)) {
             return;
         }
 
@@ -29,50 +28,43 @@ public class AiChanMiraiMessageHandlers {
             return;
         }
 
-        switch (greetCounter) {
-            case 0 -> AiChanMirai.INSTANCE.queueGroupMessage(
-                    e.getGroup().getId(), ResponseConfig.INSTANCE.getFirstGreet()
-            );
-            case 1 -> AiChanMirai.INSTANCE.queueGroupMessage(
-                    e.getGroup().getId(), ResponseConfig.INSTANCE.getSecondGreet()
-            );
-            default -> {
-                return;
-            }
+        if (greetCounter > 1) {
+            return;
         }
+
+        AiChanMirai.INSTANCE.queueGroupMessage(
+                groupId,
+                greetCounter == 0 ? ResponseConfig.INSTANCE.getFirstGreet() : ResponseConfig.INSTANCE.getSecondGreet()
+        );
         AiChanMiraiTimers.INSTANCE.addGreetCoolDown();
     }
 
     public void response(GroupMessageEvent e) {
         Bot bot = e.getBot();
         long senderId = MainConfig.INSTANCE.getSenderId();
-        Group group = e.getGroup();
+        long groupId = e.getGroup().getId();
         String messageContent = e.getMessage().contentToString();
 
-        if (bot.getId() != senderId || !MainConfig.INSTANCE.getResponseGroups().contains(group.getId())) {
+        if (bot.getId() != senderId || !MainConfig.INSTANCE.getResponseGroups().contains(groupId)) {
             return;
         }
 
-        if (e.getBot().getId() != MainConfig.INSTANCE.getSenderId()) {
-            return;
-        }
-        if (!MainConfig.INSTANCE.getResponseGroups().contains(e.getGroup().getId())) {
-            return;
-        }
-
-        handleMatchingResponse(messageContent, group, ResponseConfig.INSTANCE.getExactMatchResponses());
-        handleMatchingResponse(messageContent, group, ResponseConfig.INSTANCE.getContainMatchResponses());
+        handleMatchingResponse(messageContent, groupId, ResponseConfig.INSTANCE.getExactMatchResponses());
+        handleMatchingResponse(messageContent, groupId, ResponseConfig.INSTANCE.getContainMatchResponses());
     }
 
-    private void handleMatchingResponse(String messageContent, Group group, Map<String, String> responses) {
+    private void handleMatchingResponse(String messageContent, long groupId, Map<String, String> responses) {
         String mode = responses == ResponseConfig.INSTANCE.getExactMatchResponses() ? "精确" : "包含";
         for (Map.Entry<String, String> entry : responses.entrySet()) {
-            if ((messageContent.equals(entry.getKey()) && mode.equals("精确")) ||
-                    (messageContent.contains(entry.getKey()) && mode.equals("包含"))) {
-                String key = entry.getKey();
-                String value = entry.getValue();
+            String key = entry.getKey();
+            String value = entry.getValue();
+
+            boolean isExactMatch = messageContent.equals(key) && mode.equals("精确");
+            boolean isContainsMatch = messageContent.contains(key) && mode.equals("包含");
+
+            if (isExactMatch || isContainsMatch) {
                 if (AiChanMiraiTimers.INSTANCE.checkResponseAvailability(key)) {
-                    AiChanMirai.INSTANCE.queueGroupMessage(group.getId(), value);
+                    AiChanMirai.INSTANCE.queueGroupMessage(groupId, value);
                     AiChanMiraiTimers.INSTANCE.setResponseUnavailable(key);
                     AiChanMirai.INSTANCE.getScheduler().delayed(
                             ResponseConfig.INSTANCE.getResponseCoolDown(),
@@ -93,14 +85,14 @@ public class AiChanMiraiMessageHandlers {
     public void welcomeNewMember(MemberJoinEvent e) {
         Bot bot = e.getBot();
         long senderId = MainConfig.INSTANCE.getSenderId();
-        Group group = e.getGroup();
+        long groupId = e.getGroup().getId();
 
-        if (bot.getId() != senderId || !MainConfig.INSTANCE.getResponseGroups().contains(group.getId())) {
+        if (bot.getId() != senderId || !MainConfig.INSTANCE.getResponseGroups().contains(groupId)) {
             return;
         }
 
         String welcomeMessage = ResponseConfig.INSTANCE.getWelcomeMessage()
                 .replace("%nick%", e.getMember().getNick());
-        AiChanMirai.INSTANCE.queueGroupMessage(group.getId(), welcomeMessage);
+        AiChanMirai.INSTANCE.queueGroupMessage(groupId, welcomeMessage);
     }
 }

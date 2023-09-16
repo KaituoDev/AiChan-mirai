@@ -30,8 +30,9 @@ public class SocketServer {
         }
 
         for (INonBlockingConnection c : new ArrayList<>(ServerHandler.INSTANCE.connections)) {
-            if (c == null || !c.isOpen())
+            if (c == null || !c.isOpen()) {
                 continue;
+            }
             try {
                 c.write(encryptedData + SocketPacket.DELIMITER);
             } catch (IOException e) {

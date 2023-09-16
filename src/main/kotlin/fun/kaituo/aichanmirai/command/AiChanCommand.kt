@@ -14,7 +14,7 @@ object AiChanCommand : CompositeCommand(
     @SubCommand
     @Description("重载小爱配置和数据")
     suspend fun CommandSender.reload() {
-        AiChan.apply {
+        AiChan.run {
             cancelTasks()
             reloadAllPluginConfig()
             registerTasks()
@@ -25,7 +25,7 @@ object AiChanCommand : CompositeCommand(
     @SubCommand
     @Description("保存小爱配置和数据")
     suspend fun CommandSender.save() {
-        AiChan.apply {
+        AiChan.run {
             saveAllPluginConfig()
             queueCommandReplyMessage(this@save, "已保存配置和数据")
         }

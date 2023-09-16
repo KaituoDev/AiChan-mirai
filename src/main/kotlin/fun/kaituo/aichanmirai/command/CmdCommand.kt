@@ -23,10 +23,9 @@ object CmdCommand : SimpleCommand(
             return
         }
 
-        val command = cmd.joinToString(" ")
         val packet = SocketPacket(SocketPacket.PacketType.SERVER_COMMAND).apply {
             this[0] = trigger
-            this[1] = command
+            this[1] = cmd.joinToString(" ")
         }
         SocketServer.sendPacket(packet)
     }
