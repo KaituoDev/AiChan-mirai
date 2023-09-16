@@ -60,6 +60,8 @@ public class ServerHandler implements IDataHandler, IConnectHandler, IIdleTimeou
             return true;
         }
 
+        logger.debug(String.format("Received data from client %s: %s", nbc.getId(), data));
+
         SocketPacket packet = SocketPacket.parsePacket(data);
         switch (packet.getPacketType()) {
             case GROUP_TEXT -> AiChanMirai.INSTANCE.queueGroupMessage(
