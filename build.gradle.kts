@@ -47,6 +47,7 @@ base {
             "dev"
         }
     }"
+    rootProject.version = version
 }
 
 mirai {

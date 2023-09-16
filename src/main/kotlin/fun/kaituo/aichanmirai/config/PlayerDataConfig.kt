@@ -47,17 +47,14 @@ object PlayerDataConfig : AutoSavePluginConfig("UserData") {
     }
 
     fun link(userId: Long, mcId: String): LinkResult {
-        val existingUserId = searchMCId(mcId)
+        if (searchMCId(mcId) != -1L) {
+            return LinkResult.FAIL_ALREADY_EXIST
+        }
+
         val player = getUserData(userId)
 
         return when {
-            (existingUserId != -1L) -> {
-                if (player.isLinked) {
-                    LinkResult.FAIL_ALREADY_LINKED
-                } else {
-                    LinkResult.FAIL_ALREADY_EXIST
-                }
-            }
+            player.isLinked -> LinkResult.FAIL_ALREADY_LINKED
             else -> {
                 player.apply {
                     isLinked = true
@@ -141,12 +138,7 @@ object PlayerDataConfig : AutoSavePluginConfig("UserData") {
     }
 
     fun searchMCId(id: String): Long {
-        return id.takeIf { it !in listOf(ID_UNDEFINED, ID_UNLINKED) }
-            ?.let { searchId ->
-                playerDataMap.entries.firstNotNullOfOrNull { (key, value) ->
-                    if (value.MCID == searchId) key else null
-                }
-            } ?: -1
+        return playerDataMap.entries.find { it.value.MCID == id }?.key ?: -1
     }
 
     fun getUserData(userId: Long): PlayerData {
@@ -154,15 +146,11 @@ object PlayerDataConfig : AutoSavePluginConfig("UserData") {
             initUser(userId)
             Player(false, ID_UNDEFINED, false)
         }
-        println(player.toString())
-
-        val mcId = player.MCID
-        val isLinked = player.isLinked
 
         return PlayerData(
             userId,
-            isLinked,
-            mcId,
+            player.isLinked,
+            player.MCID,
             player.isBanned
         )
     }
