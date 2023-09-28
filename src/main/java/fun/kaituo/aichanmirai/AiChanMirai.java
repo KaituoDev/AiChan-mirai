@@ -76,12 +76,12 @@ public final class AiChanMirai extends JavaPlugin {
 
     public void queueCommandReplyMessage(CommandSender sender, String content) {
         commandReplyQueue.add(new AbstractMap.SimpleEntry<>(sender, content));
-        logger.debug(String.format("Queued command reply: %s", content));
+        logger.info(String.format("Queued command reply: %s", content));
     }
 
     public void queueGroupMessage(Long groupId, String content) {
         groupMessageQueue.add(new AbstractMap.SimpleEntry<>(groupId, content));
-        logger.debug(String.format("Queued message for group %d: %s", groupId, content));
+        logger.info(String.format("Queued message for group %d: %s", groupId, content));
     }
 
     private void sendGroupMessage(Long groupId, String content) {
@@ -99,7 +99,7 @@ public final class AiChanMirai extends JavaPlugin {
                 return;
             }
             group.sendMessage(content);
-            logger.debug(String.format("Sent message for group %d: %s", groupId, content));
+            logger.info(String.format("Sent message for group %d: %s", groupId, content));
 
 
         } catch (NoSuchElementException e) {
