@@ -9,8 +9,8 @@ import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.MemberCommandSender
 import net.mamoe.mirai.console.command.UserCommandSender
 import net.mamoe.mirai.contact.nameCardOrNick
-import `fun`.kaituo.aichanmirai.AiChanMirai.INSTANCE as AiChan
-import `fun`.kaituo.aichanmirai.server.SocketServer.INSTANCE as SocketServer
+import `fun`.kaituo.aichanmirai.AiChanMirai as AiChan
+import `fun`.kaituo.aichanmirai.server.SocketServer.Companion.INSTANCE as SocketServer
 
 object MinecraftUserCommand : CompositeCommand(
     AiChan,
@@ -33,14 +33,14 @@ object MinecraftUserCommand : CompositeCommand(
                 }
             }
         }
-        AiChan.queueCommandReplyMessage(this, message)
+        AiChan.replyCommand(this, message)
     }
 
     @SubCommand("list", "l")
     @Description("列出在线玩家")
     suspend fun CommandSender.list() {
         if (this !is MemberCommandSender || this.group.id != MainConfig.messagingGroup) {
-            AiChan.queueCommandReplyMessage(this, ResponseConfig.groupOnlyMessage)
+            AiChan.replyCommand(this, ResponseConfig.groupOnlyMessage)
             return
         }
 

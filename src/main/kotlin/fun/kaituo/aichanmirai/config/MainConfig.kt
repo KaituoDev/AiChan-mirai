@@ -4,7 +4,7 @@ import com.macasaet.fernet.Key
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.ValueDescription
 import net.mamoe.mirai.console.data.value
-import `fun`.kaituo.aichanmirai.AiChanMirai.INSTANCE as AiChan
+import `fun`.kaituo.aichanmirai.AiChanMirai as AiChan
 
 object MainConfig : AutoSavePluginConfig("MainConfig") {
 

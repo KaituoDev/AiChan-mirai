@@ -8,8 +8,8 @@ import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.MemberCommandSender
 import net.mamoe.mirai.console.command.SimpleCommand
 import net.mamoe.mirai.contact.nameCardOrNick
-import `fun`.kaituo.aichanmirai.AiChanMirai.INSTANCE as AiChan
-import `fun`.kaituo.aichanmirai.server.SocketServer.INSTANCE as SocketServer
+import `fun`.kaituo.aichanmirai.AiChanMirai as AiChan
+import `fun`.kaituo.aichanmirai.server.SocketServer.Companion.INSTANCE as SocketServer
 
 object SayCommand : SimpleCommand(
     AiChan,
@@ -21,7 +21,7 @@ object SayCommand : SimpleCommand(
     @Handler
     suspend fun CommandSender.say(trigger: String, vararg msg: String) {
         if (this !is MemberCommandSender || this.group.id != MainConfig.messagingGroup) {
-            AiChan.queueCommandReplyMessage(this, ResponseConfig.groupOnlyMessage)
+            AiChan.replyCommand(this, ResponseConfig.groupOnlyMessage)
             return
         }
 
@@ -29,16 +29,16 @@ object SayCommand : SimpleCommand(
         val nick = this.user.nameCardOrNick
 
         when {
-            player.isBanned -> AiChan.queueCommandReplyMessage(this, "$nick，你已被封禁！")
-            !player.isLinked -> AiChan.queueCommandReplyMessage(this, "$nick，你还未链接 MCID！")
+            player.isBanned -> AiChan.replyCommand(this, "$nick，你已被封禁！")
+            !player.isLinked -> AiChan.replyCommand(this, "$nick，你还未链接 MCID！")
             else -> {
-                val mcId = player.mcId
-                val message = msg
-                    .joinToString(" ")
-                    .replace("&", "§")
                 val packet = SocketPacket(SocketPacket.PacketType.SERVER_TEXT).apply {
                     this[0] = trigger
-                    this[1] = "$mcId: $message"
+                    this[1] = "${player.mcId}: $${
+                        msg
+                            .joinToString(" ")
+                            .replace("&", "§")
+                    }"
                 }
                 SocketServer.sendPacket(packet)
             }

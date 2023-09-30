@@ -6,8 +6,8 @@ import `fun`.kaituo.aichanmirai.server.SocketPacket
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.MemberCommandSender
 import net.mamoe.mirai.console.command.SimpleCommand
-import `fun`.kaituo.aichanmirai.AiChanMirai.INSTANCE as AiChan
-import `fun`.kaituo.aichanmirai.server.SocketServer.INSTANCE as SocketServer
+import `fun`.kaituo.aichanmirai.AiChanMirai as AiChan
+import `fun`.kaituo.aichanmirai.server.SocketServer.Companion.INSTANCE as SocketServer
 
 object CmdCommand : SimpleCommand(
     AiChan,
@@ -19,7 +19,7 @@ object CmdCommand : SimpleCommand(
     @Handler
     suspend fun CommandSender.cmd(trigger: String, vararg cmd: String) {
         if (this !is MemberCommandSender || this.group.id != MainConfig.messagingGroup) {
-            AiChan.queueCommandReplyMessage(this, ResponseConfig.groupOnlyMessage)
+            AiChan.replyCommand(this, ResponseConfig.groupOnlyMessage)
             return
         }
 

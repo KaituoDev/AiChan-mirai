@@ -1,12 +1,16 @@
 package `fun`.kaituo.aichanmirai.command
 
 import `fun`.kaituo.aichanmirai.config.PlayerDataConfig
+import `fun`.kaituo.aichanmirai.config.PlayerDataConfig.BanResult
+import `fun`.kaituo.aichanmirai.config.PlayerDataConfig.LinkResult
+import `fun`.kaituo.aichanmirai.config.PlayerDataConfig.PardonResult
+import `fun`.kaituo.aichanmirai.config.PlayerDataConfig.UnlinkResult
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.contact.nameCardOrNick
-import `fun`.kaituo.aichanmirai.AiChanMirai.INSTANCE as AiChan
-import `fun`.kaituo.aichanmirai.server.SocketServer.INSTANCE as SocketServer
+import `fun`.kaituo.aichanmirai.AiChanMirai as AiChan
+import `fun`.kaituo.aichanmirai.server.SocketServer.Companion.INSTANCE as SocketServer
 
 object MinecraftAdminCommand : CompositeCommand(
     AiChan,
@@ -22,13 +26,12 @@ object MinecraftAdminCommand : CompositeCommand(
         val id = user.id
 
         val message = when (result) {
-            PlayerDataConfig.LinkResult.SUCCESS -> "已成功为用户 $nick($id) 链接 ID 至 ${mcId[0]}"
-            PlayerDataConfig.LinkResult.FAIL_ALREADY_EXIST -> "这个 ID 已被其他用户链接了！"
-            PlayerDataConfig.LinkResult.FAIL_ALREADY_LINKED -> {
+            LinkResult.SUCCESS -> "已成功为用户 $nick($id) 链接 ID 至 ${mcId[0]}"
+            LinkResult.FAIL_ALREADY_EXIST -> "这个 ID 已被其他用户链接了！"
+            LinkResult.FAIL_ALREADY_LINKED -> {
                 val arg = runCatching { mcId[1] }.getOrDefault("")
                 if (arg in listOf("--force", "-f")) {
-                    val player = PlayerDataConfig.getUserData(id)
-                    player.apply { this.mcId = mcId[0] }
+                    val player = PlayerDataConfig.getUserData(id).apply { this.mcId = mcId[0] }
                     PlayerDataConfig.setUserData(player)
                     SocketServer.sendPacket(player.getStatusPacket())
                     "已强制为用户 $nick($id) 链接 ID 至 ${mcId[0]}！"
@@ -37,7 +40,7 @@ object MinecraftAdminCommand : CompositeCommand(
                 }
             }
         }
-        AiChan.queueCommandReplyMessage(this, message)
+        AiChan.replyCommand(this, message)
     }
 
     @SubCommand
@@ -48,10 +51,10 @@ object MinecraftAdminCommand : CompositeCommand(
         val id = user.id
 
         val message = when (result) {
-            PlayerDataConfig.UnlinkResult.SUCCESS -> "已成功为用户 $nick($id) 解绑 ID"
-            PlayerDataConfig.UnlinkResult.FAIL_NOT_LINKED -> "用户 $nick($id) 还未链接 ID！"
+            UnlinkResult.SUCCESS -> "已成功为用户 $nick($id) 解绑 ID"
+            UnlinkResult.FAIL_NOT_LINKED -> "用户 $nick($id) 还未链接 ID！"
         }
-        AiChan.queueCommandReplyMessage(this, message)
+        AiChan.replyCommand(this, message)
     }
 
     @SubCommand
@@ -62,11 +65,11 @@ object MinecraftAdminCommand : CompositeCommand(
         val id = user.id
 
         val message = when (result) {
-            PlayerDataConfig.BanResult.SUCCESS -> "已封禁用户 $nick($id)"
-            PlayerDataConfig.BanResult.FAIL_ALREADY_BANNED -> "用户 $nick($id) 已处于封禁状态！"
-            PlayerDataConfig.BanResult.FAIL_NOT_FOUND -> "发生了未知错误，请联系管理员检查后台！"
+            BanResult.SUCCESS -> "已封禁用户 $nick($id)"
+            BanResult.FAIL_ALREADY_BANNED -> "用户 $nick($id) 已处于封禁状态！"
+            BanResult.FAIL_NOT_FOUND -> "发生了未知错误，请联系管理员检查后台！"
         }
-        AiChan.queueCommandReplyMessage(this, message)
+        AiChan.replyCommand(this, message)
     }
 
     @SubCommand
@@ -77,11 +80,11 @@ object MinecraftAdminCommand : CompositeCommand(
         val id = user.id
 
         val message = when (result) {
-            PlayerDataConfig.PardonResult.SUCCESS -> "已解封用户 $nick($id)"
-            PlayerDataConfig.PardonResult.FAIL_NOT_BANNED -> "用户 $nick($id) 未被封禁！"
-            PlayerDataConfig.PardonResult.FAIL_NOT_FOUND -> "未找到用户 $id，请联系管理员检查后台！"
+            PardonResult.SUCCESS -> "已解封用户 $nick($id)"
+            PardonResult.FAIL_NOT_BANNED -> "用户 $nick($id) 未被封禁！"
+            PardonResult.FAIL_NOT_FOUND -> "未找到用户 $id，请联系管理员检查后台！"
         }
-        AiChan.queueCommandReplyMessage(this, message)
+        AiChan.replyCommand(this, message)
     }
 
     @SubCommand
@@ -91,11 +94,11 @@ object MinecraftAdminCommand : CompositeCommand(
         val id = PlayerDataConfig.searchMCId(mcId)
 
         val message = when (result) {
-            PlayerDataConfig.BanResult.FAIL_NOT_FOUND -> "不存在 MCID 为 $mcId 的用户！"
-            PlayerDataConfig.BanResult.SUCCESS -> "已封禁用户 ($id)"
-            PlayerDataConfig.BanResult.FAIL_ALREADY_BANNED -> "用户 ($id) 已处于封禁状态！"
+            BanResult.FAIL_NOT_FOUND -> "不存在 MCID 为 $mcId 的用户！"
+            BanResult.SUCCESS -> "已封禁用户 ($id)"
+            BanResult.FAIL_ALREADY_BANNED -> "用户 ($id) 已处于封禁状态！"
         }
-        AiChan.queueCommandReplyMessage(this, message)
+        AiChan.replyCommand(this, message)
     }
 
     @SubCommand
@@ -105,18 +108,18 @@ object MinecraftAdminCommand : CompositeCommand(
         val id = PlayerDataConfig.searchMCId(mcId)
 
         val message = when (result) {
-            PlayerDataConfig.PardonResult.FAIL_NOT_FOUND -> "不存在 MCID 为 $mcId 的用户！"
-            PlayerDataConfig.PardonResult.SUCCESS -> "已解封用户 ($id)"
-            PlayerDataConfig.PardonResult.FAIL_NOT_BANNED -> "用户 ($id) 未被封禁！"
+            PardonResult.FAIL_NOT_FOUND -> "不存在 MCID 为 $mcId 的用户！"
+            PardonResult.SUCCESS -> "已解封用户 ($id)"
+            PardonResult.FAIL_NOT_BANNED -> "用户 ($id) 未被封禁！"
         }
-        AiChan.queueCommandReplyMessage(this, message)
+        AiChan.replyCommand(this, message)
     }
 
     @SubCommand
     @Description("查询用户状态(QQ 号)")
     suspend fun CommandSender.find(user: User) {
         val player = PlayerDataConfig.getUserData(user.id)
-        AiChan.queueCommandReplyMessage(
+        AiChan.replyCommand(
             this,
             queryPlayerStatus(user.id, player.mcId)
         )
@@ -129,7 +132,7 @@ object MinecraftAdminCommand : CompositeCommand(
             -1L -> "不存在 MCID 为 $mcId 的用户！"
             else -> queryPlayerStatus(id, mcId)
         }
-        AiChan.queueCommandReplyMessage(this, message)
+        AiChan.replyCommand(this, message)
     }
 }
 

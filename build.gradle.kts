@@ -13,6 +13,7 @@ plugins {
 
     id("net.mamoe.mirai-console").version("2.15.0")
     id("com.github.johnrengelman.shadow").version("8.1.1")  // FIXME
+    id("net.kyori.blossom").version("2.1.0")
 }
 
 repositories {
@@ -25,13 +26,13 @@ repositories {
 
 dependencies {
     // https://mvnrepository.com/artifact/com.google.code.gson/gson
-    implementation("com.google.code.gson:gson:${property("gson_version")}")
+    implementation("com.google.code.gson:gson:${properties["gson_version"]}")
 
     // https://mvnrepository.com/artifact/com.macasaet.fernet/fernet-java8
-    implementation("com.macasaet.fernet:fernet-java8:${property("fernet_version")}")
+    implementation("com.macasaet.fernet:fernet-java8:${properties["fernet_version"]}")
 
     // https://mvnrepository.com/artifact/org.xsocket/xSocket
-    implementation("org.xsocket:xSocket:${property("xsocket_version")}")
+    implementation("org.xsocket:xSocket:${properties["xsocket_version"]}")
 
     val detektVersion = "1.23.1"
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:$detektVersion")
@@ -39,8 +40,9 @@ dependencies {
 }
 
 base {
-    archivesName = "${property("archives_base_name")}"
-    version = "${property("version")}+${
+    group = "${properties["maven_group"]}"
+    archivesName = "${properties["archives_base_name"]}"
+    version = "${properties["version"]}+${
         if (grgit.status().isClean()) {
             grgit.head().abbreviatedId
         } else {
@@ -59,6 +61,16 @@ detekt {
     config.setFrom(file("config/detekt/detekt.yml"))
     buildUponDefaultConfig = true
     autoCorrect = false
+}
+
+sourceSets {
+    main {
+        blossom {
+            resources {
+                property("version", version.toString())
+            }
+        }
+    }
 }
 
 tasks {

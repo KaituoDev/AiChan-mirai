@@ -5,8 +5,8 @@ import kotlinx.serialization.Serializable
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.ValueDescription
 import net.mamoe.mirai.console.data.value
-import `fun`.kaituo.aichanmirai.AiChanMirai.INSTANCE as AiChan
-import `fun`.kaituo.aichanmirai.server.SocketServer.INSTANCE as SocketServer
+import `fun`.kaituo.aichanmirai.AiChanMirai as AiChan
+import `fun`.kaituo.aichanmirai.server.SocketServer.Companion.INSTANCE as SocketServer
 
 object PlayerDataConfig : AutoSavePluginConfig("UserData") {
 
@@ -47,14 +47,11 @@ object PlayerDataConfig : AutoSavePluginConfig("UserData") {
     }
 
     fun link(userId: Long, mcId: String): LinkResult {
-        if (searchMCId(mcId) != -1L) {
-            return LinkResult.FAIL_ALREADY_EXIST
-        }
-
         val player = getUserData(userId)
 
         return when {
             player.isLinked -> LinkResult.FAIL_ALREADY_LINKED
+            (searchMCId(mcId) != -1L) -> LinkResult.FAIL_ALREADY_EXIST
             else -> {
                 player.apply {
                     isLinked = true
