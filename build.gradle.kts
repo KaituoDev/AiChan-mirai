@@ -26,13 +26,16 @@ repositories {
 
 dependencies {
     // https://mvnrepository.com/artifact/com.google.code.gson/gson
-    implementation("com.google.code.gson:gson:${properties["gson_version"]}")
+    val gson_version: String by project
+    implementation("com.google.code.gson:gson:$gson_version")
 
     // https://mvnrepository.com/artifact/com.macasaet.fernet/fernet-java8
-    implementation("com.macasaet.fernet:fernet-java8:${properties["fernet_version"]}")
+    val fernet_version: String by project
+    implementation("com.macasaet.fernet:fernet-java8:$fernet_version")
 
     // https://mvnrepository.com/artifact/org.xsocket/xSocket
-    implementation("org.xsocket:xSocket:${properties["xsocket_version"]}")
+    val xsocket_version: String by project
+    implementation("org.xsocket:xSocket:$xsocket_version")
 
     val detektVersion = "1.23.1"
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:$detektVersion")
