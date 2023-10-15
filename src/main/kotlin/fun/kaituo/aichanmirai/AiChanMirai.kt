@@ -131,6 +131,7 @@ object AiChanMirai : KotlinPlugin(JvmPluginDescription.loadFromResource()) {
     override fun onEnable() {
         reloadAllPluginConfig()
         for (command in commands) command.register(true)
+        registerTasks()
         for (listener in listeners) (listener as SimpleListenerHost).registerTo(
             GlobalEventChannel
                 .filterIsInstance<GroupEvent>()
@@ -139,7 +140,6 @@ object AiChanMirai : KotlinPlugin(JvmPluginDescription.loadFromResource()) {
         )
 
         logger.info("小爱-mirai 已启用")
-        registerTasks()
 
         val mainConfig = MainConfig
         if (mainConfig.token.isEmpty()) {
