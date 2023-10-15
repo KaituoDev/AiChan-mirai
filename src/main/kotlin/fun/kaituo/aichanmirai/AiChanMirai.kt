@@ -1,19 +1,24 @@
 package `fun`.kaituo.aichanmirai
 
 import com.macasaet.fernet.StringValidator
-import `fun`.kaituo.aichanmirai.command.*
 import `fun`.kaituo.aichanmirai.config.MainConfig
 import `fun`.kaituo.aichanmirai.config.PlayerDataConfig
 import `fun`.kaituo.aichanmirai.config.ResponseConfig
 import `fun`.kaituo.aichanmirai.server.SocketServer
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.command.CommandManager
+import net.mamoe.mirai.console.command.Command
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.CommandSender
-import net.mamoe.mirai.console.plugin.jvm.*
+import net.mamoe.mirai.console.data.PluginConfig
+import net.mamoe.mirai.console.plugin.jvm.JavaPluginScheduler
+import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
+import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.event.GlobalEventChannel
-import net.mamoe.mirai.event.events.GroupMessageEvent
-import net.mamoe.mirai.event.events.MemberJoinEvent
+import net.mamoe.mirai.event.ListenerHost
+import net.mamoe.mirai.event.SimpleListenerHost
+import net.mamoe.mirai.event.events.GroupEvent
+import net.mamoe.mirai.event.registerTo
 import java.util.*
 import java.util.concurrent.Future
 
@@ -45,6 +50,10 @@ object AiChanMirai : KotlinPlugin(JvmPluginDescription.loadFromResource()) {
     private val activeTasks: MutableList<Future<*>> = ArrayList()
 
     val validator = object : StringValidator {}
+
+    private val commands: List<Command> by services()
+    private val configs: List<PluginConfig> by services()
+    private val listeners: List<ListenerHost> by services()
 
     fun replyCommand(sender: CommandSender, content: String) {
         commandReplyQueue.add(AbstractMap.SimpleEntry(sender, content))
@@ -79,25 +88,11 @@ object AiChanMirai : KotlinPlugin(JvmPluginDescription.loadFromResource()) {
     }
 
     fun saveAllPluginConfig() {
-        savePluginConfig(MainConfig)
-        savePluginConfig(PlayerDataConfig)
-        savePluginConfig(ResponseConfig)
+        for (config in configs) config.save()
     }
 
     fun reloadAllPluginConfig() {
-        reloadPluginConfig(MainConfig)
-        reloadPluginConfig(PlayerDataConfig)
-        reloadPluginConfig(ResponseConfig)
-    }
-
-    private fun registerCommands() {
-        CommandManager.INSTANCE.run {
-            registerCommand(AiChanCommand, true)
-            registerCommand(MinecraftUserCommand, true)
-            registerCommand(MinecraftAdminCommand, true)
-            registerCommand(SayCommand, true)
-            registerCommand(CmdCommand, true)
-        }
+        for (config in configs) config.reload()
     }
 
     fun cancelTasks() {
@@ -133,26 +128,18 @@ object AiChanMirai : KotlinPlugin(JvmPluginDescription.loadFromResource()) {
         )
     }
 
-    private fun subscribeEvents() {
-        GlobalEventChannel.parentScope(this).run {
-            subscribeAlways<GroupMessageEvent> { event ->
-                AiChanMiraiMessageHandlers.response(event)
-            }
-            subscribeAlways<GroupMessageEvent> { event ->
-                AiChanMiraiMessageHandlers.greet(event)
-            }
-            subscribeAlways<MemberJoinEvent> { event ->
-                AiChanMiraiMessageHandlers.welcomeNewMember(event)
-            }
-        }
-    }
-
     override fun onEnable() {
         reloadAllPluginConfig()
+        for (command in commands) command.register(true)
+        for (listener in listeners) (listener as SimpleListenerHost).registerTo(
+            GlobalEventChannel
+                .filterIsInstance<GroupEvent>()
+                .filter { it.bot.id == MainConfig.senderId && it.group.id in MainConfig.responseGroups }
+                .parentScope(this)
+        )
+
         logger.info("小爱-mirai 已启用")
-        registerCommands()
         registerTasks()
-        subscribeEvents()
 
         val mainConfig = MainConfig
         if (mainConfig.token.isEmpty()) {

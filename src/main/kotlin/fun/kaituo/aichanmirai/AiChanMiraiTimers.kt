@@ -19,6 +19,7 @@ class AiChanMiraiTimers {
     }
 
     private val responseInCoolDown: MutableList<String> = ArrayList()
+
     fun checkResponseAvailability(key: String): Boolean {
         return !responseInCoolDown.contains(key)
     }

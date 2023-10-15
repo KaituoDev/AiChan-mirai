@@ -1,45 +1,31 @@
 package `fun`.kaituo.aichanmirai
 
-import `fun`.kaituo.aichanmirai.config.MainConfig
 import `fun`.kaituo.aichanmirai.config.ResponseConfig
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MemberJoinEvent
 
 object AiChanMiraiMessageHandlers {
     fun greet(e: GroupMessageEvent) {
-        val bot = e.bot
-        val senderId = MainConfig.senderId
-        val groupId = e.group.id
         val messageContent = e.message.contentToString()
         val greetCounter = AiChanMiraiTimers.INSTANCE.greetCounter
 
-        val notInResponseGroup = !MainConfig.responseGroups.contains(groupId)
-        val notSameSender = bot.id != senderId
         val notPing = messageContent != "小爱"
         val shouldShutUp = greetCounter > 1
 
-        if (notSameSender || notInResponseGroup || notPing || shouldShutUp) {
+        if (notPing || shouldShutUp) {
             return
         }
 
         AiChanMirai.sendGroup(
-            groupId,
+            e.group.id,
             if (greetCounter == 0) ResponseConfig.firstGreet else ResponseConfig.secondGreet
         )
         AiChanMiraiTimers.INSTANCE.addGreetCoolDown()
     }
 
     fun response(e: GroupMessageEvent) {
-        val bot = e.bot
-        val senderId = MainConfig.senderId
         val groupId = e.group.id
         val messageContent = e.message.contentToString()
-
-        val notSameSender = bot.id != senderId
-        val notInResponseGroup = !MainConfig.responseGroups.contains(groupId)
-        if (notSameSender || notInResponseGroup) {
-            return
-        }
 
         handleMatchingResponse(messageContent, groupId, ResponseConfig.exactMatchResponses)
         handleMatchingResponse(messageContent, groupId, ResponseConfig.containMatchResponses)
@@ -66,18 +52,8 @@ object AiChanMiraiMessageHandlers {
     }
 
     fun welcomeNewMember(e: MemberJoinEvent) {
-        val bot = e.bot
-        val senderId = MainConfig.senderId
-        val groupId = e.group.id
-
-        val notInResponseGroup = !MainConfig.responseGroups.contains(groupId)
-        val notSameSender = bot.id != senderId
-        if (notSameSender || notInResponseGroup) {
-            return
-        }
-
         val welcomeMessage = ResponseConfig.welcomeMessage
             .replace("%nick%", e.member.nick)
-        AiChanMirai.sendGroup(groupId, welcomeMessage)
+        AiChanMirai.sendGroup(e.group.id, welcomeMessage)
     }
 }
