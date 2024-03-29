@@ -6,7 +6,7 @@ plugins {
     kotlin("jvm").version(kotlinVersion)
     kotlin("plugin.serialization").version(kotlinVersion)
 
-    val detektVersion = "1.23.5"
+    val detektVersion = "1.23.6"
     id("io.gitlab.arturbosch.detekt").version(detektVersion)
 
     id("org.ajoberstar.grgit").version("5.2.2")
@@ -37,7 +37,7 @@ dependencies {
     val xsocket_version: String by project
     implementation("org.xsocket:xSocket:$xsocket_version")
 
-    val detektVersion = "1.23.5"
+    val detektVersion = "1.23.6"
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:$detektVersion")
 
 }
