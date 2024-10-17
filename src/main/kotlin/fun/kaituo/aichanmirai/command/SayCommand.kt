@@ -34,7 +34,7 @@ object SayCommand : SimpleCommand(
             else -> {
                 val packet = SocketPacket(SocketPacket.PacketType.SERVER_TEXT).apply {
                     this[0] = trigger
-                    this[1] = "${player.mcId}: $${
+                    this[1] = "${player.mcId}: ${
                         msg
                             .joinToString(" ")
                             .replace("&", "§")
