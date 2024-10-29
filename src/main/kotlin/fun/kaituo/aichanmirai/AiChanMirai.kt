@@ -21,6 +21,7 @@ import net.mamoe.mirai.event.events.GroupEvent
 import net.mamoe.mirai.event.registerTo
 import java.util.*
 import java.util.concurrent.Future
+import kotlin.collections.HashMap
 
 /**
  * 使用 Java 请把
@@ -42,7 +43,7 @@ import java.util.concurrent.Future
  * 不用复制到 mirai-console-loader 或其他启动器中调试
  */
 object AiChanMirai : KotlinPlugin(JvmPluginDescription.loadFromResource()) {
-
+    private val groupMessages: MutableMap<Long, String> = HashMap()
     private val groupMessageQueue: Queue<Map.Entry<Long, String>> = LinkedList()
     private val commandReplyQueue: Queue<Map.Entry<CommandSender, String>> = LinkedList()
 
@@ -60,11 +61,23 @@ object AiChanMirai : KotlinPlugin(JvmPluginDescription.loadFromResource()) {
         logger.info("Queued command reply: ${content.replace("\n", "\\n")}")
     }
 
-    fun sendGroup(groupId: Long, content: String) {
-        groupMessageQueue.add(AbstractMap.SimpleEntry(groupId, content))
+    // Queue one group message, concatenate if multiple messages are queued for the same group
+    fun queueGroupMessage(groupId: Long, content: String) {
+        if (groupId in groupMessages) {
+            groupMessages[groupId] += content + "\n"
+        } else {
+            groupMessages[groupId] = content + "\n"
+        }
         logger.info("Queued message for group $groupId: ${content.replace("\n", "\\n")}")
     }
 
+    // Queue all group messages
+    fun queueGroupMessages() {
+        groupMessages.forEach { entry: Map.Entry<Long, String> ->
+            groupMessageQueue.add(AbstractMap.SimpleEntry(entry.key, entry.value))
+        }
+        groupMessages.clear()
+    }
     private fun sendGroupMessage(groupId: Long, content: String) {
         try {
             val bot = Bot.getInstance(MainConfig.senderId)
@@ -107,6 +120,7 @@ object AiChanMirai : KotlinPlugin(JvmPluginDescription.loadFromResource()) {
             listOf(
                 (MainConfig.autoSaveInterval) to this::saveAllPluginConfig,
                 (MainConfig.messageInterval) to {
+                    queueGroupMessages()
                     if (groupMessageQueue.isNotEmpty()) {
                         val entry = groupMessageQueue.peek()
                         sendGroupMessage(entry.key, entry.value)

@@ -60,7 +60,7 @@ class ServerHandler private constructor() :
         val packet = SocketPacket.parsePacket(data)
 
         when (packet.packetType) {
-            PacketType.GROUP_TEXT -> AiChanMirai.sendGroup(MainConfig.messagingGroup, packet[0])
+            PacketType.GROUP_TEXT -> AiChanMirai.queueGroupMessage(MainConfig.messagingGroup, packet[0])
             PacketType.PLAYER_LOOKUP -> {
                 val mcId = packet[0]
                 val id = PlayerDataConfig.searchMCId(mcId)

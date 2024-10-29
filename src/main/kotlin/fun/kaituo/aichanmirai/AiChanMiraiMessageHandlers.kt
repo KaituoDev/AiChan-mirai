@@ -16,7 +16,7 @@ object AiChanMiraiMessageHandlers {
             return
         }
 
-        AiChanMirai.sendGroup(
+        AiChanMirai.queueGroupMessage(
             e.group.id,
             if (greetCounter == 0) ResponseConfig.firstGreet else ResponseConfig.secondGreet
         )
@@ -38,7 +38,7 @@ object AiChanMiraiMessageHandlers {
             val isContainsMatch = messageContent.contains(key) && mode == "包含"
             if (isExactMatch || isContainsMatch) {
                 if (AiChanMiraiTimers.INSTANCE.checkResponseAvailability(key)) {
-                    AiChanMirai.sendGroup(groupId, value)
+                    AiChanMirai.queueGroupMessage(groupId, value)
                     AiChanMiraiTimers.INSTANCE.setResponseUnavailable(key)
                     AiChanMirai.scheduler.delayed(
                         ResponseConfig.responseCoolDown
@@ -54,6 +54,6 @@ object AiChanMiraiMessageHandlers {
     fun welcomeNewMember(e: MemberJoinEvent) {
         val welcomeMessage = ResponseConfig.welcomeMessage
             .replace("%nick%", e.member.nick)
-        AiChanMirai.sendGroup(e.group.id, welcomeMessage)
+        AiChanMirai.queueGroupMessage(e.group.id, welcomeMessage)
     }
 }
