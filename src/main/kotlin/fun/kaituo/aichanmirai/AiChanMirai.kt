@@ -64,9 +64,9 @@ object AiChanMirai : KotlinPlugin(JvmPluginDescription.loadFromResource()) {
     // Queue one group message, concatenate if multiple messages are queued for the same group
     fun queueGroupMessage(groupId: Long, content: String) {
         if (groupId in groupMessages) {
-            groupMessages[groupId] += content + "\n"
+            groupMessages[groupId] += "\n" + content
         } else {
-            groupMessages[groupId] = content + "\n"
+            groupMessages[groupId] = content
         }
         logger.info("Queued message for group $groupId: ${content.replace("\n", "\\n")}")
     }
