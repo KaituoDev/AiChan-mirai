@@ -6,14 +6,15 @@ import com.google.gson.annotations.Expose
 // Remember to update Packet on the other end
 class SocketPacket(@field:Expose val packetType: PacketType) {
     enum class PacketType {
-        HEARTBEAT,
-        GROUP_TEXT,
-        SERVER_TEXT,
-        PLAYER_LOOKUP,
-        PLAYER_STATUS,
-        PLAYER_NOT_FOUND,
-        LIST_REQUEST,
-        SERVER_COMMAND
+        HEARTBEAT_TO_BOT,
+        SERVER_CHAT_TO_BOT,
+        GROUP_CHAT_TO_SERVER,
+        PLAYER_LOOKUP_REQUEST_TO_BOT,
+        PLAYER_LOOKUP_RESULT_TO_SERVER,
+        PLAYER_NOT_FOUND_TO_SERVER,
+        LIST_REQUEST_TO_SERVER,
+        COMMAND_TO_SERVER,
+        SERVER_INFORMATION_TO_BOT
     }
 
     operator fun set(index: Int, data: String) {

@@ -23,7 +23,7 @@ object CmdCommand : SimpleCommand(
             return
         }
 
-        val packet = SocketPacket(SocketPacket.PacketType.SERVER_COMMAND).apply {
+        val packet = SocketPacket(SocketPacket.PacketType.COMMAND_TO_SERVER).apply {
             this[0] = trigger
             this[1] = cmd.joinToString(" ")
         }

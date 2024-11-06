@@ -44,7 +44,7 @@ object MinecraftUserCommand : CompositeCommand(
             return
         }
 
-        val packet = SocketPacket(SocketPacket.PacketType.LIST_REQUEST)
+        val packet = SocketPacket(SocketPacket.PacketType.LIST_REQUEST_TO_SERVER)
         SocketServer.sendPacket(packet)
     }
 }

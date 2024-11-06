@@ -20,6 +20,9 @@ object MainConfig : AutoSavePluginConfig("MainConfig") {
     @ValueDescription("启用通讯的群")
     val messagingGroup by value<Long>(123456)
 
+    @ValueDescription("群聊向服务器同步聊天时的前缀")
+    val groupChatPrefix by value<String>("§7[§b群§7]§r")
+
     @ValueDescription("启用欢迎和应答的群")
     val responseGroups: MutableList<Long> by value()
 

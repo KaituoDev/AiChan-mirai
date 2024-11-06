@@ -8,7 +8,7 @@ class PlayerData(var userId: Long, var isLinked: Boolean, var mcId: String, var 
     }
 
     fun getStatusPacket(): SocketPacket {
-        return SocketPacket(SocketPacket.PacketType.PLAYER_STATUS).apply {
+        return SocketPacket(SocketPacket.PacketType.PLAYER_LOOKUP_RESULT_TO_SERVER).apply {
             this[0] = userId.toString()
             this[1] = isLinked.toString()
             this[2] = mcId

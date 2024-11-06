@@ -15,7 +15,7 @@ object SayCommand : SimpleCommand(
     AiChan,
     "say",
     "s",
-    description = "向MC服务器发送消息"
+    description = "向MC服务器发送消息",
 ) {
 
     @Handler
@@ -32,10 +32,10 @@ object SayCommand : SimpleCommand(
             player.isBanned -> AiChan.replyCommand(this, "$nick，你已被封禁！")
             !player.isLinked -> AiChan.replyCommand(this, "$nick，你还未链接 MCID！")
             else -> {
-                val packet = SocketPacket(SocketPacket.PacketType.SERVER_TEXT).apply {
+                val packet = SocketPacket(SocketPacket.PacketType.GROUP_CHAT_TO_SERVER).apply {
                     // Now group chat message will be sent to all servers
                     this[0] = "all"
-                    this[1] = "${player.mcId}: ${
+                    this[1] = MainConfig.groupChatPrefix + " " + "${player.mcId}: ${
                         msg
                             .joinToString(" ")
                     }"

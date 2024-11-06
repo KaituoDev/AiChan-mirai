@@ -61,21 +61,24 @@ class ServerHandler private constructor() :
         val packet = SocketPacket.parsePacket(data)
 
         when (packet.packetType) {
-            PacketType.GROUP_TEXT -> {
+            PacketType.SERVER_CHAT_TO_BOT -> {
                 AiChanMirai.queueGroupMessage(MainConfig.messagingGroup, Utils.removeMinecraftColor(packet[1]))
                 val trigger = packet[0]
                 val content = packet[1]
-                val serverTextPacket = SocketPacket(PacketType.SERVER_TEXT).apply {
+                val serverTextPacket = SocketPacket(PacketType.GROUP_CHAT_TO_SERVER).apply {
                     this[0] = trigger
                     this[1] = content
                 }
                 SocketServer.INSTANCE.sendPacket(serverTextPacket)
             }
-            PacketType.PLAYER_LOOKUP -> {
+            PacketType.SERVER_INFORMATION_TO_BOT -> {
+                AiChanMirai.queueGroupMessage(MainConfig.messagingGroup, Utils.removeMinecraftColor(packet[0]))
+            }
+            PacketType.PLAYER_LOOKUP_REQUEST_TO_BOT -> {
                 val mcId = packet[0]
                 val id = PlayerDataConfig.searchMCId(mcId)
                 if (id == -1L) {
-                    val notFoundPacket = SocketPacket(PacketType.PLAYER_NOT_FOUND).apply {
+                    val notFoundPacket = SocketPacket(PacketType.PLAYER_NOT_FOUND_TO_SERVER).apply {
                         this[0] = mcId
                     }
                     SocketServer.INSTANCE.sendPacket(notFoundPacket)

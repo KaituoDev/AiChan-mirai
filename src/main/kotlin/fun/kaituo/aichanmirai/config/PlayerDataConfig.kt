@@ -70,7 +70,7 @@ object PlayerDataConfig : AutoSavePluginConfig("UserData") {
         return when {
             !player.isLinked -> UnlinkResult.FAIL_NOT_LINKED
             else -> {
-                val unlinkPacket = SocketPacket(SocketPacket.PacketType.PLAYER_NOT_FOUND)
+                val unlinkPacket = SocketPacket(SocketPacket.PacketType.PLAYER_NOT_FOUND_TO_SERVER)
                 unlinkPacket.set(0, player.mcId)
                 SocketServer.sendPacket(unlinkPacket)
 
