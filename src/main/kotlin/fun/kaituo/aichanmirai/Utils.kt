@@ -1,13 +1,8 @@
-package fun.kaituo.aichanmirai;
+package `fun`.kaituo.aichanmirai
 
-public class Utils {
-    @SuppressWarnings("unused")
-    public static String fixMinecraftColor(String message) {
-        return message.replaceAll("&([0-9a-fk-or])","§$1" );
-    }
+object Utils {
 
-    @SuppressWarnings("unused")
-    public static String removeMinecraftColor(String message) {
-        return message.replaceAll("&([0-9a-fk-or])","");
+    fun removeMinecraftColor(message: String): String {
+        return message.replace("[&§]([0-9a-fk-or])".toRegex(), "")
     }
 }

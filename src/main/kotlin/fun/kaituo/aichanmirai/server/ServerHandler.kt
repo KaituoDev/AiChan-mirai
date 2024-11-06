@@ -3,7 +3,7 @@ package `fun`.kaituo.aichanmirai.server
 import com.macasaet.fernet.Key
 import com.macasaet.fernet.Token
 import `fun`.kaituo.aichanmirai.AiChanMirai
-import `fun`.kaituo.aichanmirai.Utils.removeMinecraftColor
+import `fun`.kaituo.aichanmirai.Utils
 import `fun`.kaituo.aichanmirai.config.MainConfig
 import `fun`.kaituo.aichanmirai.config.PlayerDataConfig
 import `fun`.kaituo.aichanmirai.server.SocketPacket.PacketType
@@ -62,7 +62,7 @@ class ServerHandler private constructor() :
 
         when (packet.packetType) {
             PacketType.GROUP_TEXT -> {
-                AiChanMirai.queueGroupMessage(MainConfig.messagingGroup, removeMinecraftColor(packet[1]))
+                AiChanMirai.queueGroupMessage(MainConfig.messagingGroup, Utils.removeMinecraftColor(packet[1]))
                 val trigger = packet[0]
                 val content = packet[1]
                 val serverTextPacket = SocketPacket(PacketType.SERVER_TEXT).apply {
