@@ -70,7 +70,6 @@ class ServerHandler private constructor() :
                     this[1] = content
                 }
                 SocketServer.INSTANCE.sendPacket(serverTextPacket)
-
             }
             PacketType.PLAYER_LOOKUP -> {
                 val mcId = packet[0]
