@@ -3,6 +3,7 @@ package `fun`.kaituo.aichanmirai.server
 import com.macasaet.fernet.Key
 import com.macasaet.fernet.Token
 import `fun`.kaituo.aichanmirai.AiChanMirai
+import `fun`.kaituo.aichanmirai.Utils.removeMinecraftColor
 import `fun`.kaituo.aichanmirai.config.MainConfig
 import `fun`.kaituo.aichanmirai.config.PlayerDataConfig
 import `fun`.kaituo.aichanmirai.server.SocketPacket.PacketType
@@ -60,7 +61,17 @@ class ServerHandler private constructor() :
         val packet = SocketPacket.parsePacket(data)
 
         when (packet.packetType) {
-            PacketType.GROUP_TEXT -> AiChanMirai.queueGroupMessage(MainConfig.messagingGroup, packet[0])
+            PacketType.GROUP_TEXT -> {
+                AiChanMirai.queueGroupMessage(MainConfig.messagingGroup, removeMinecraftColor(packet[1]))
+                val trigger = packet[0]
+                val content = packet[1]
+                val serverTextPacket = SocketPacket(PacketType.SERVER_TEXT).apply {
+                    this[0] = trigger
+                    this[1] = content
+                }
+                SocketServer.INSTANCE.sendPacket(serverTextPacket)
+
+            }
             PacketType.PLAYER_LOOKUP -> {
                 val mcId = packet[0]
                 val id = PlayerDataConfig.searchMCId(mcId)

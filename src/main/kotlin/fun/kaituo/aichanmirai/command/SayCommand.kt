@@ -19,7 +19,7 @@ object SayCommand : SimpleCommand(
 ) {
 
     @Handler
-    suspend fun CommandSender.say(trigger: String, vararg msg: String) {
+    suspend fun CommandSender.say(vararg msg: String) {
         if (this !is MemberCommandSender || this.group.id != MainConfig.messagingGroup) {
             AiChan.replyCommand(this, ResponseConfig.groupOnlyMessage)
             return
@@ -33,11 +33,11 @@ object SayCommand : SimpleCommand(
             !player.isLinked -> AiChan.replyCommand(this, "$nick，你还未链接 MCID！")
             else -> {
                 val packet = SocketPacket(SocketPacket.PacketType.SERVER_TEXT).apply {
-                    this[0] = trigger
+                    // Now group chat message will be sent to all servers
+                    this[0] = "all"
                     this[1] = "${player.mcId}: ${
                         msg
                             .joinToString(" ")
-                            .replace("&", "§")
                     }"
                 }
                 SocketServer.sendPacket(packet)
