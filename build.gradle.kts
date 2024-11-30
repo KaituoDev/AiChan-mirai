@@ -2,7 +2,7 @@ import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 
 plugins {
-    val kotlinVersion = "2.0.21"
+    val kotlinVersion = "2.1.0"
     kotlin("jvm").version(kotlinVersion)
     kotlin("plugin.serialization").version(kotlinVersion)
 
