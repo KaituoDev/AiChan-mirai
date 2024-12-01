@@ -60,6 +60,9 @@ object AiChanMirai : KotlinPlugin(JvmPluginDescription.loadFromResource()) {
     // Hardcoded message polling interval
     private const val MESSAGE_POLLING_INTERVAL = 200L
 
+    // HardCoded message delay
+    private const val MESSAGE_DELAY = 1000L
+
     fun queueCommandReply(sender: CommandSender, content: String) {
         commandReplyQueue.add(AbstractMap.SimpleEntry(sender, content))
         logger.info("Queued command reply: ${content.replace("\n", "\\n")}")
@@ -77,7 +80,7 @@ object AiChanMirai : KotlinPlugin(JvmPluginDescription.loadFromResource()) {
         }
         if (groupMessageQueue.isNotEmpty()) {
             val entry = groupMessageQueue.peek()
-            sendGroupMessage(entry.key, entry.value)
+            scheduler.delayed(MESSAGE_DELAY) { sendGroupMessage(entry.key, entry.value) }
             groupMessageQueue.poll()
             AiChanMiraiTimers.messageCoolDownTimer = MainConfig.messageInterval
         }
@@ -92,7 +95,7 @@ object AiChanMirai : KotlinPlugin(JvmPluginDescription.loadFromResource()) {
             val entry = commandReplyQueue.peek()
             val commandSender = entry.key
             val content = entry.value
-            launch { commandSender.sendMessage(content) }
+            scheduler.delayed(MESSAGE_DELAY) { launch { commandSender.sendMessage(content) } }
             commandReplyQueue.poll()
             AiChanMiraiTimers.commandReplyCoolDownTimer = MainConfig.commandReplyInterval
         }
@@ -127,7 +130,7 @@ object AiChanMirai : KotlinPlugin(JvmPluginDescription.loadFromResource()) {
             val message = collectLatestServerMessages(MainConfig.serverMessageMaxLines)
             serverMessages.clear()
             val groupId = MainConfig.messagingGroup
-            sendGroupMessage(groupId, message)
+            scheduler.delayed(MESSAGE_DELAY) { sendGroupMessage(groupId, message) }
             AiChanMiraiTimers.serverMessageCoolDownTimerFast = MainConfig.serverMessageIntervalFast
             AiChanMiraiTimers.serverMessageCoolDownTimerSlow = MainConfig.serverMessageIntervalSlow
         }
