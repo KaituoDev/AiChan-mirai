@@ -62,7 +62,7 @@ class ServerHandler private constructor() :
 
         when (packet.packetType) {
             PacketType.SERVER_CHAT_TO_BOT -> {
-                AiChanMirai.serverMessages.add(Utils.removeMinecraftColor(packet[1]))
+                AiChanMirai.serverMessages.add(Utils.getFormattedTime() + Utils.removeMinecraftColor(packet[1]))
                 val trigger = packet[0]
                 val content = packet[1]
                 val serverTextPacket = SocketPacket(PacketType.GROUP_CHAT_TO_SERVER).apply {
@@ -72,7 +72,7 @@ class ServerHandler private constructor() :
                 SocketServer.INSTANCE.sendPacket(serverTextPacket)
             }
             PacketType.SERVER_INFORMATION_TO_BOT -> {
-                AiChanMirai.serverMessages.add(Utils.removeMinecraftColor(packet[0]))
+                AiChanMirai.serverMessages.add(Utils.getFormattedTime() + Utils.removeMinecraftColor(packet[0]))
             }
             PacketType.PLAYER_LOOKUP_REQUEST_TO_BOT -> {
                 val mcId = packet[0]
