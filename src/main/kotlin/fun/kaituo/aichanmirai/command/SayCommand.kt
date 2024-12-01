@@ -21,7 +21,7 @@ object SayCommand : SimpleCommand(
     @Handler
     suspend fun CommandSender.say(vararg msg: String) {
         if (this !is MemberCommandSender || this.group.id != MainConfig.messagingGroup) {
-            AiChan.replyCommand(this, ResponseConfig.groupOnlyMessage)
+            AiChan.queueCommandReply(this, ResponseConfig.groupOnlyMessage)
             return
         }
 
@@ -29,8 +29,8 @@ object SayCommand : SimpleCommand(
         val nick = this.user.nameCardOrNick
 
         when {
-            player.isBanned -> AiChan.replyCommand(this, "$nick，你已被封禁！")
-            !player.isLinked -> AiChan.replyCommand(this, "$nick，你还未链接 MCID！")
+            player.isBanned -> AiChan.queueCommandReply(this, "$nick，你已被封禁！")
+            !player.isLinked -> AiChan.queueCommandReply(this, "$nick，你还未链接 MCID！")
             else -> {
                 val packet = SocketPacket(SocketPacket.PacketType.GROUP_CHAT_TO_SERVER).apply {
                     // Now group chat message will be sent to all servers

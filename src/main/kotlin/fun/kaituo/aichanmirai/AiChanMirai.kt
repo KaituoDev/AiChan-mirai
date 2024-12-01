@@ -21,7 +21,6 @@ import net.mamoe.mirai.event.events.GroupEvent
 import net.mamoe.mirai.event.registerTo
 import java.util.*
 import java.util.concurrent.Future
-import kotlin.collections.HashMap
 
 /**
  * 使用 Java 请把
@@ -43,9 +42,11 @@ import kotlin.collections.HashMap
  * 不用复制到 mirai-console-loader 或其他启动器中调试
  */
 object AiChanMirai : KotlinPlugin(JvmPluginDescription.loadFromResource()) {
-    private val groupMessages: MutableMap<Long, String> = HashMap()
-    private val groupMessageQueue: Queue<Map.Entry<Long, String>> = LinkedList()
     private val commandReplyQueue: Queue<Map.Entry<CommandSender, String>> = LinkedList()
+    private val groupMessageQueue: Queue<Map.Entry<Long, String>> = LinkedList()
+
+    // Messages sent by Minecraft servers, have their own timers
+    val serverMessages: MutableList<String> = ArrayList()
 
     val scheduler: JavaPluginScheduler = JavaPluginScheduler(this.coroutineContext)
     private val activeTasks: MutableList<Future<*>> = ArrayList()
@@ -56,28 +57,82 @@ object AiChanMirai : KotlinPlugin(JvmPluginDescription.loadFromResource()) {
     private val configs: List<PluginConfig> by services()
     private val listeners: List<ListenerHost> by services()
 
-    fun replyCommand(sender: CommandSender, content: String) {
+    // Hardcoded message polling interval
+    private const val MESSAGE_POLLING_INTERVAL = 200L
+
+    fun queueCommandReply(sender: CommandSender, content: String) {
         commandReplyQueue.add(AbstractMap.SimpleEntry(sender, content))
         logger.info("Queued command reply: ${content.replace("\n", "\\n")}")
     }
 
-    // Queue one group message, concatenate if multiple messages are queued for the same group
     fun queueGroupMessage(groupId: Long, content: String) {
-        if (groupId in groupMessages) {
-            groupMessages[groupId] += "\n" + content
-        } else {
-            groupMessages[groupId] = content
-        }
+        groupMessageQueue.add(AbstractMap.SimpleEntry(groupId, content))
         logger.info("Queued message for group $groupId: ${content.replace("\n", "\\n")}")
     }
 
-    // Queue all group messages
-    fun queueGroupMessages() {
-        groupMessages.forEach { entry: Map.Entry<Long, String> ->
-            groupMessageQueue.add(AbstractMap.SimpleEntry(entry.key, entry.value))
+    // If cool down is over, poll one group message and send it
+    private fun groupMessagePolling() {
+        if (AiChanMiraiTimers.messageCoolDownTimer > 0) {
+            return
         }
-        groupMessages.clear()
+        if (groupMessageQueue.isNotEmpty()) {
+            val entry = groupMessageQueue.peek()
+            sendGroupMessage(entry.key, entry.value)
+            groupMessageQueue.poll()
+            AiChanMiraiTimers.messageCoolDownTimer = MainConfig.messageInterval
+        }
     }
+
+    // If cool down is over, poll one command reply and send it
+    private fun commandReplyPolling() {
+        if (AiChanMiraiTimers.commandReplyCoolDownTimer > 0) {
+            return
+        }
+        if (commandReplyQueue.isNotEmpty()) {
+            val entry = commandReplyQueue.peek()
+            val commandSender = entry.key
+            val content = entry.value
+            launch { commandSender.sendMessage(content) }
+            commandReplyQueue.poll()
+            AiChanMiraiTimers.commandReplyCoolDownTimer = MainConfig.commandReplyInterval
+        }
+    }
+
+    private fun collectLatestServerMessages(maxLines: Int): String {
+        val groupMessageCopy = serverMessages.toList()
+        if (groupMessageCopy.size <= maxLines) {
+            return groupMessageCopy.joinToString("\n")
+        } else {
+            val prefix = "(已隐藏更早的" + (groupMessageCopy.size - maxLines) + "条消息)\n"
+            return prefix + groupMessageCopy.subList(groupMessageCopy.size - maxLines, groupMessageCopy.size)
+                .joinToString("\n")
+        }
+    }
+
+    private fun serverMessagePolling() {
+        if (AiChanMiraiTimers.serverMessageThresholdTimer > 0) {
+            if (AiChanMiraiTimers.serverMessageCoolDownTimerFast > 0) {
+                // Other users have sent messages within the threshold,
+                // but the fast cool down is not over
+                return
+            }
+        } else {
+            if (AiChanMiraiTimers.serverMessageCoolDownTimerSlow > 0) {
+                // Other users have not sent messages within the threshold,
+                // and the slow cool down is not over
+                return
+            }
+        }
+        if (serverMessages.isNotEmpty()) {
+            val message = collectLatestServerMessages(MainConfig.serverMessageMaxLines)
+            serverMessages.clear()
+            val groupId = MainConfig.messagingGroup
+            sendGroupMessage(groupId, message)
+            AiChanMiraiTimers.serverMessageCoolDownTimerFast = MainConfig.serverMessageIntervalFast
+            AiChanMiraiTimers.serverMessageCoolDownTimerSlow = MainConfig.serverMessageIntervalSlow
+        }
+    }
+
     private fun sendGroupMessage(groupId: Long, content: String) {
         try {
             val bot = Bot.getInstance(MainConfig.senderId)
@@ -118,25 +173,12 @@ object AiChanMirai : KotlinPlugin(JvmPluginDescription.loadFromResource()) {
     fun registerTasks() {
         activeTasks.addAll(
             listOf(
+                AiChanMiraiTimers.MESSAGE_TIMERS_UPDATE_INTERVAL to AiChanMiraiTimers::updateTimers,
                 (MainConfig.autoSaveInterval) to this::saveAllPluginConfig,
-                (MainConfig.messageInterval) to {
-                    queueGroupMessages()
-                    if (groupMessageQueue.isNotEmpty()) {
-                        val entry = groupMessageQueue.peek()
-                        sendGroupMessage(entry.key, entry.value)
-                        groupMessageQueue.poll()
-                    }
-                },
-                (MainConfig.messageInterval) to {
-                    if (commandReplyQueue.isNotEmpty()) {
-                        val entry = commandReplyQueue.peek()
-                        val commandSender = entry.key
-                        val content = entry.value
-                        launch { commandSender.sendMessage(content) }
-                        commandReplyQueue.poll()
-                    }
-                },
-                (ResponseConfig.greetCoolDown) to AiChanMiraiTimers.INSTANCE::deductGreetCoolDown,
+                MESSAGE_POLLING_INTERVAL to this::commandReplyPolling,
+                MESSAGE_POLLING_INTERVAL to this::groupMessagePolling,
+                MESSAGE_POLLING_INTERVAL to this::serverMessagePolling,
+                (ResponseConfig.greetCoolDown) to AiChanMiraiTimers::deductGreetCounter,
                 (PlayerDataConfig.cleanInterval) to PlayerDataConfig::clean
             ).map { (interval, action) -> scheduler.repeating(interval, action) }
         )

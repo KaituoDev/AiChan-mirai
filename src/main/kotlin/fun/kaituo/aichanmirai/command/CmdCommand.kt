@@ -19,7 +19,7 @@ object CmdCommand : SimpleCommand(
     @Handler
     suspend fun CommandSender.cmd(trigger: String, vararg cmd: String) {
         if (this !is MemberCommandSender || this.group.id != MainConfig.messagingGroup) {
-            AiChan.replyCommand(this, ResponseConfig.groupOnlyMessage)
+            AiChan.queueCommandReply(this, ResponseConfig.groupOnlyMessage)
             return
         }
 

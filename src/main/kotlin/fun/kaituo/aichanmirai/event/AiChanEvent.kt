@@ -8,6 +8,11 @@ import net.mamoe.mirai.event.events.MemberJoinEvent
 
 object AiChanEvent : SimpleListenerHost() {
     @EventHandler
+    suspend fun GroupMessageEvent.onUpdateServerMessageThresholdTimer() {
+        AiChanMiraiMessageHandlers.updateServerMessageThresholdTimer(this)
+    }
+
+    @EventHandler
     suspend fun GroupMessageEvent.onResponse() {
         AiChanMiraiMessageHandlers.response(this)
     }

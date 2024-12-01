@@ -40,7 +40,7 @@ object MinecraftAdminCommand : CompositeCommand(
                 }
             }
         }
-        AiChan.replyCommand(this, message)
+        AiChan.queueCommandReply(this, message)
     }
 
     @SubCommand
@@ -54,7 +54,7 @@ object MinecraftAdminCommand : CompositeCommand(
             UnlinkResult.SUCCESS -> "已成功为用户 $nick($id) 解绑 ID"
             UnlinkResult.FAIL_NOT_LINKED -> "用户 $nick($id) 还未链接 ID！"
         }
-        AiChan.replyCommand(this, message)
+        AiChan.queueCommandReply(this, message)
     }
 
     @SubCommand
@@ -69,7 +69,7 @@ object MinecraftAdminCommand : CompositeCommand(
             BanResult.FAIL_ALREADY_BANNED -> "用户 $nick($id) 已处于封禁状态！"
             BanResult.FAIL_NOT_FOUND -> "发生了未知错误，请联系管理员检查后台！"
         }
-        AiChan.replyCommand(this, message)
+        AiChan.queueCommandReply(this, message)
     }
 
     @SubCommand
@@ -84,7 +84,7 @@ object MinecraftAdminCommand : CompositeCommand(
             PardonResult.FAIL_NOT_BANNED -> "用户 $nick($id) 未被封禁！"
             PardonResult.FAIL_NOT_FOUND -> "未找到用户 $id，请联系管理员检查后台！"
         }
-        AiChan.replyCommand(this, message)
+        AiChan.queueCommandReply(this, message)
     }
 
     @SubCommand
@@ -98,7 +98,7 @@ object MinecraftAdminCommand : CompositeCommand(
             BanResult.SUCCESS -> "已封禁用户 ($id)"
             BanResult.FAIL_ALREADY_BANNED -> "用户 ($id) 已处于封禁状态！"
         }
-        AiChan.replyCommand(this, message)
+        AiChan.queueCommandReply(this, message)
     }
 
     @SubCommand
@@ -112,14 +112,14 @@ object MinecraftAdminCommand : CompositeCommand(
             PardonResult.SUCCESS -> "已解封用户 ($id)"
             PardonResult.FAIL_NOT_BANNED -> "用户 ($id) 未被封禁！"
         }
-        AiChan.replyCommand(this, message)
+        AiChan.queueCommandReply(this, message)
     }
 
     @SubCommand
     @Description("查询用户状态(QQ 号)")
     suspend fun CommandSender.find(user: User) {
         val player = PlayerDataConfig.getUserData(user.id)
-        AiChan.replyCommand(
+        AiChan.queueCommandReply(
             this,
             queryPlayerStatus(user.id, player.mcId)
         )
@@ -132,7 +132,7 @@ object MinecraftAdminCommand : CompositeCommand(
             -1L -> "不存在 MCID 为 $mcId 的用户！"
             else -> queryPlayerStatus(id, mcId)
         }
-        AiChan.replyCommand(this, message)
+        AiChan.queueCommandReply(this, message)
     }
 }
 

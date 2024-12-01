@@ -1,13 +1,23 @@
 package `fun`.kaituo.aichanmirai
 
+import `fun`.kaituo.aichanmirai.config.MainConfig
 import `fun`.kaituo.aichanmirai.config.ResponseConfig
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MemberJoinEvent
 
 object AiChanMiraiMessageHandlers {
+    fun updateServerMessageThresholdTimer(e: GroupMessageEvent) {
+        if (e.sender.id == MainConfig.senderId) {
+            return
+        }
+        if (e.group.id == MainConfig.messagingGroup) {
+            AiChanMiraiTimers.serverMessageThresholdTimer = MainConfig.serverMessageThreshold
+        }
+    }
+
     fun greet(e: GroupMessageEvent) {
         val messageContent = e.message.contentToString()
-        val greetCounter = AiChanMiraiTimers.INSTANCE.greetCounter
+        val greetCounter = AiChanMiraiTimers.greetCounter
 
         val notPing = messageContent != "小爱"
         val shouldShutUp = greetCounter > 1
@@ -20,7 +30,7 @@ object AiChanMiraiMessageHandlers {
             e.group.id,
             if (greetCounter == 0) ResponseConfig.firstGreet else ResponseConfig.secondGreet
         )
-        AiChanMiraiTimers.INSTANCE.addGreetCoolDown()
+        AiChanMiraiTimers.addGreetCounter()
     }
 
     fun response(e: GroupMessageEvent) {
@@ -37,12 +47,12 @@ object AiChanMiraiMessageHandlers {
             val isExactMatch = messageContent == key && mode == "精确"
             val isContainsMatch = messageContent.contains(key) && mode == "包含"
             if (isExactMatch || isContainsMatch) {
-                if (AiChanMiraiTimers.INSTANCE.checkResponseAvailability(key)) {
+                if (AiChanMiraiTimers.checkResponseAvailability(key)) {
                     AiChanMirai.queueGroupMessage(groupId, value)
-                    AiChanMiraiTimers.INSTANCE.setResponseUnavailable(key)
+                    AiChanMiraiTimers.setResponseUnavailable(key)
                     AiChanMirai.scheduler.delayed(
                         ResponseConfig.responseCoolDown
-                    ) { AiChanMiraiTimers.INSTANCE.setResponseAvailable(key) }
+                    ) { AiChanMiraiTimers.setResponseAvailable(key) }
                 } else {
                     AiChanMirai.logger.info("${mode}关键词 $key 冷却中")
                 }

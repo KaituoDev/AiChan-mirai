@@ -11,8 +11,23 @@ object MainConfig : AutoSavePluginConfig("MainConfig") {
     @ValueDescription("配置自动保存时间")
     val autoSaveInterval by value<Long>(600000)
 
-    @ValueDescription("发言间隔时间")
+    @ValueDescription("指令反馈间隔时间")
+    val commandReplyInterval by value<Long>(500)
+
+    @ValueDescription("消息间隔时间")
     val messageInterval by value<Long>(500)
+
+    @ValueDescription("高频推送间隔时间，仅作用于服务器消息")
+    val serverMessageIntervalFast by value<Long>(10000)
+
+    @ValueDescription("低频推送间隔时间，仅作用于服务器消息")
+    val serverMessageIntervalSlow by value<Long>(1800000)
+
+    @ValueDescription("高频推送时间阈值，如果在此时间范围内没有其他用户发送消息，则机器人停止高频推送")
+    val serverMessageThreshold by value<Long>(60000)
+
+    @ValueDescription("单次发送消息的最大行数")
+    val serverMessageMaxLines by value<Int>(20)
 
     @ValueDescription("机器人的QQ号")
     val senderId by value<Long>(123456)

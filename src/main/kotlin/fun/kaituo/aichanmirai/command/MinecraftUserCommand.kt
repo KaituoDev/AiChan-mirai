@@ -33,14 +33,14 @@ object MinecraftUserCommand : CompositeCommand(
                 }
             }
         }
-        AiChan.replyCommand(this, message)
+        AiChan.queueCommandReply(this, message)
     }
 
     @SubCommand("list", "l")
     @Description("列出在线玩家")
     suspend fun CommandSender.list() {
         if (this !is MemberCommandSender || this.group.id != MainConfig.messagingGroup) {
-            AiChan.replyCommand(this, ResponseConfig.groupOnlyMessage)
+            AiChan.queueCommandReply(this, ResponseConfig.groupOnlyMessage)
             return
         }
 
