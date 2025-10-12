@@ -13,7 +13,7 @@ plugins {
 
     id("net.mamoe.mirai-console").version("2.16.0")
     id("com.github.johnrengelman.shadow").version("8.1.1")  // FIXME
-    id("net.kyori.blossom").version("2.1.0")
+    id("net.kyori.blossom").version("2.2.0")
 }
 
 repositories {
